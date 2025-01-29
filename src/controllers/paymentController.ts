@@ -3,6 +3,7 @@ import axios from 'axios';
 import db from '../config/db';
 import Payments from '../models/Payment.model';
 import { config } from '../config/config';
+import { MESSAGES } from '../config/constants/messages';
 
 const { inventoryServiceUrl, productServiceUrl } = config;
 
@@ -34,7 +35,7 @@ class PaymentController {
       return res.status(200).json({ data: payments }); // Devuelve los pagos encontrados.
     } catch (error) {
       console.error('Error en getPayments:', error.message); 
-      return res.status(500).json({ error: 'Error al obtener los pagos' }); // Respuesta en caso de error.
+      return res.status(500).json({ error: MESSAGES.PAYMENT.PROCESS_ERROR }); // Respuesta en caso de error.
     }
   }
 
@@ -47,13 +48,13 @@ class PaymentController {
       });
 
       if (!payment) {
-        return res.status(404).json({ message: 'Pago no encontrado' }); // Devuelve error si el pago no existe.
+        return res.status(404).json({ message: MESSAGES.PAYMENT.NOT_FOUND }); // Devuelve error si el pago no existe.
       }
 
       return res.status(200).json(payment); // Devuelve el pago encontrado.
     } catch (error) {
       console.error('Error en getPaymentById:', error.message); // Log del error.
-      return res.status(500).json({ message: 'Error al obtener el pago', error }); // Respuesta en caso de error.
+      return res.status(500).json({ message: MESSAGES.PAYMENT.PROCESS_ERROR, error }); // Respuesta en caso de error.
     }
   }
 
@@ -62,7 +63,7 @@ class PaymentController {
     const { product_id, quantity, payment_method } = req.body; // Extrae los datos necesarios del cuerpo de la solicitud.
 
     if (!product_id || quantity <= 0 || !payment_method) { // Valida los datos ingresados.
-      return res.status(400).json({ message: 'ID de producto, cantidad y método de pago son necesarios' });
+      return res.status(400).json({ message: MESSAGES.VALIDATION.REQUIRED_FIELDS });
     }
 
     const transaction = await db.transaction(); // Inicia una transacción para garantizar la consistencia.
@@ -77,7 +78,7 @@ class PaymentController {
       const stock = stockResponse.data;
 
       if (!stock) {
-        return res.status(500).json({ message: 'No se pudo obtener el stock del producto' });
+        return res.status(500).json({ message: MESSAGES.PAYMENT.STOCK_FETCH_ERROR });
       }
 
       // Obtiene los detalles del producto. 
@@ -87,12 +88,12 @@ class PaymentController {
       const product = productResponse.data;
 
       if (!product || !product.data) {
-        return res.status(500).json({ message: 'No se pudo obtener la información del producto' });
+        return res.status(500).json({ message: MESSAGES.PAYMENT.PRODUCT_FETCH_ERROR });
       }
       // Verifica si hay stock suficiente y revierte la transacción si no hay stock suficiente.
       if (stock.quantity < quantity) { 
         await transaction.rollback(); 
-        return res.status(400).json({ message: 'Stock no disponible' });
+        return res.status(400).json({ message: MESSAGES.PAYMENT.STOCK_NOT_AVAILABLE });
       }
       // Calculo del precio total
       const price = product.data.price; 
@@ -123,7 +124,7 @@ class PaymentController {
     } catch (error) {
       await transaction.rollback(); // Revierte la transacción en caso de error.
       console.error('Error en processPayment:', error.message); 
-      return res.status(500).json({ message: 'Error al procesar el pago' }); 
+      return res.status(500).json({ message: MESSAGES.PAYMENT.PROCESS_ERROR }); 
     }
   }
 
@@ -139,7 +140,7 @@ class PaymentController {
 
       if (!payment) {
         await transaction.rollback(); // Revierte la transacción si no encuentra el pago.
-        return res.status(404).json({ error: 'Pago no encontrado' });
+        return res.status(404).json({ error: MESSAGES.PAYMENT.NOT_FOUND });
       }
 
       await payment.destroy({ transaction }); // Elimina el registro del pago.
@@ -147,11 +148,11 @@ class PaymentController {
       await transaction.commit(); // Confirma la transacción.
 
       // Devuelve un mensaje de éxito, indicando que el inventario debe ser gestionado externamente.
-      return res.json({ message: 'Pago revertido exitosamente. La compensación de inventario debe ser gestionada por el orquestador.' });
+      return res.json({ message: MESSAGES.PAYMENT.REVERT_SUCCESS });
     } catch (error) {
       await transaction.rollback(); // Revierte la transacción en caso de error.
       console.error('Error al revertir el pago:', error.message); 
-      return res.status(500).json({ error: 'Error al revertir el pago' }); 
+      return res.status(500).json({ error: MESSAGES.PAYMENT.REVERT_ERROR }); 
     }
   }
 }

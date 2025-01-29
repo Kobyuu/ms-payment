@@ -20,7 +20,7 @@ COPY . .
 COPY .env .env
 
 # Expone el puerto en el que la aplicación correrá
-EXPOSE 4003
+EXPOSE 3000
 
 # Define el comando para correr la aplicación
-CMD ["npm","run","dev"]
+CMD ["npm", "run", "dev"]

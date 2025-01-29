@@ -2,9 +2,10 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import routes from './routes';
 import sequelize from './config/dbConfig';
-
+import { config } from './config/config';
+//usar limiter aca
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = config.port || 3000;
 
 app.use(bodyParser.json());
 app.use('/api', routes);

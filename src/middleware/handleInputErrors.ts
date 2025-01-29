@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { validationResult } from 'express-validator';
+import { MESSAGES } from '../config/constants/messages';
 
 // Middleware para manejar errores de validación en las solicitudes
 export const handleInputErrors = (req: Request, res: Response, next: NextFunction) => {
@@ -20,23 +21,23 @@ export const validatePayment = (req: Request, res: Response, next: NextFunction)
   
   // Validación de campos obligatorios
   if (!product_id || !quantity || !payment_method) {
-    return res.status(400).json({ message: 'El ID del producto, la cantidad y el método de pago son obligatorios.' });
+    return res.status(400).json({ message: MESSAGES.VALIDATION.REQUIRED_FIELDS });
   }
 
   // Validación de que product_id sea un número entero válido
   if (isNaN(Number(product_id)) || Number(product_id) <= 0) {
-    return res.status(400).json({ message: 'El ID del producto debe ser un número válido y mayor que 0.' });
+    return res.status(400).json({ message: MESSAGES.VALIDATION.INVALID_PRODUCT_ID });
   }
 
   // Validación adicional para cantidad (debe ser mayor a 0)
   if (quantity <= 0) {
-    return res.status(400).json({ message: 'La cantidad debe ser un número mayor a 0.' });
+    return res.status(400).json({ message: MESSAGES.VALIDATION.INVALID_QUANTITY });
   }
 
   // Validación opcional para el método de pago (puedes ampliarlo según tus necesidades)
   const validPaymentMethods = ['tarjeta de credito', 'paypal', 'transferencia bancaria']; // Ejemplo de métodos válidos
   if (!validPaymentMethods.includes(payment_method)) {
-    return res.status(400).json({ message: 'El método de pago no es válido.' });
+    return res.status(400).json({ message: MESSAGES.VALIDATION.INVALID_PAYMENT_METHOD });
   }
 
   // Si todo está bien, continuar con la siguiente función

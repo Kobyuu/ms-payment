@@ -1,14 +1,18 @@
 import express from 'express';
-import bodyParser from 'body-parser';
-import routes from './routes';
+import router from './router';
 import sequelize from './config/dbConfig';
 import { config } from './config/config';
-//usar limiter aca
+
 const app = express();
 const PORT = config.port || 3000;
 
-app.use(bodyParser.json());
-app.use('/api', routes);
+// Usar express.json() para analizar cuerpos JSON
+app.use(express.json());
+
+// Usar express.urlencoded() para analizar cuerpos URL-encoded
+app.use(express.urlencoded({ extended: true }));
+
+app.use('/api', router);
 
 sequelize.authenticate()
   .then(() => {

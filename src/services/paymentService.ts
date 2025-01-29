@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from '../config/axiosRetryConfig';
 import db from '../config/db';
 import Payments from '../models/Payment.model';
 import { config } from '../config/config';
@@ -7,20 +7,6 @@ import { MESSAGES } from '../config/constants/messages';
 const { inventoryServiceUrl, productServiceUrl } = config;
 
 class PaymentService {
-  static async withRetries(action: () => Promise<any>, retries: number = 3): Promise<any> {
-    let attempt = 0;
-    while (attempt < retries) {
-      try {
-        return await action();
-      } catch (error) {
-        attempt++;
-        if (attempt >= retries) {
-          throw error;
-        }
-      }
-    }
-  }
-
   static async getPayments() {
     return Payments.findAll({
       attributes: { exclude: ['createdAt', 'updatedAt'] },
@@ -38,18 +24,14 @@ class PaymentService {
     const transaction = await db.transaction();
 
     try {
-      const stockResponse = await PaymentService.withRetries(() =>
-        axios.get(`${inventoryServiceUrl}/${product_id}`)
-      );
+      const stockResponse = await axios.get(`${inventoryServiceUrl}/${product_id}`);
       const stock = stockResponse.data;
 
       if (!stock) {
         throw new Error(MESSAGES.PAYMENT.STOCK_FETCH_ERROR);
       }
 
-      const productResponse = await PaymentService.withRetries(() =>
-        axios.get(`${productServiceUrl}/${product_id}`)
-      );
+      const productResponse = await axios.get(`${productServiceUrl}/${product_id}`);
       const product = productResponse.data;
 
       if (!product || !product.data) {
@@ -73,13 +55,11 @@ class PaymentService {
         { transaction }
       );
 
-      await PaymentService.withRetries(() =>
-        axios.put(`${inventoryServiceUrl}/update`, {
-          product_id,
-          quantity,
-          input_output: 2,
-        })
-      );
+      await axios.put(`${inventoryServiceUrl}/update`, {
+        product_id,
+        quantity,
+        input_output: 2,
+      });
 
       await transaction.commit();
       return newPayment;
@@ -93,7 +73,7 @@ class PaymentService {
     const transaction = await db.transaction();
 
     try {
-      const payment = await PaymentService.withRetries(() => Payments.findByPk(paymentId, { transaction }), 3);
+      const payment = await Payments.findByPk(paymentId, { transaction });
 
       if (!payment) {
         await transaction.rollback();

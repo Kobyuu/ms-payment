@@ -1,11 +1,13 @@
-import { Sequelize } from 'sequelize-typescript'
-import dotenv from 'dotenv'
-dotenv.config()
+// microservicios/ms-payment/src/config/db.ts
+import { Sequelize } from 'sequelize-typescript';
+import dotenv from 'dotenv';
+import { config } from './config';
 
+dotenv.config();
 
-const db = new Sequelize(process.env.DATABASE_URL!, {
-    models: [ __dirname + '/../models/**/*.ts' ],
-    logging: false,
-})
+const sequelize = new Sequelize(config.databaseUrl, {
+  models: [__dirname + '/../models/**/*.ts'],
+  logging: false,
+});
 
-export default db
+export default sequelize;

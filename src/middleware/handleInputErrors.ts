@@ -5,12 +5,12 @@ import { MESSAGES } from '../config/constants/messages';
 // Middleware para manejar errores de validación en las solicitudes
 export const handleInputErrors = (req: Request, res: Response, next: NextFunction) => {
   const errors = validationResult(req);
-  
+
   // Si existen errores de validación, devolver un error 400 con los detalles
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
-  
+
   // Si no hay errores, continuar con la siguiente función
   next();
 };
@@ -18,7 +18,7 @@ export const handleInputErrors = (req: Request, res: Response, next: NextFunctio
 // Middleware para validar la entrada de datos para el pago
 export const validatePayment = (req: Request, res: Response, next: NextFunction) => {
   const { product_id, quantity, payment_method } = req.body;
-  
+
   // Validación de campos obligatorios
   if (!product_id || !quantity || !payment_method) {
     return res.status(400).json({ message: MESSAGES.VALIDATION.REQUIRED_FIELDS });

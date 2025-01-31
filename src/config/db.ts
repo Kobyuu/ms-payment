@@ -1,4 +1,3 @@
-// microservicios/ms-payment/src/config/db.ts
 import { Sequelize } from 'sequelize-typescript';
 import dotenv from 'dotenv';
 import { config } from './config';

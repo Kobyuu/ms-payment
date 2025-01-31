@@ -15,7 +15,7 @@ export const ERROR_MESSAGES = {
   },
   GENERAL: {
     DB_CONNECTION_ERROR: 'No se pudo conectar a la base de datos:',
-    ENV_VAR_NOT_DEFINED: 'Environment variable not defined',
+    ENV_VAR_NOT_DEFINED: 'Variable de entorno no definida',
   },
 };
 

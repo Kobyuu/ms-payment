@@ -65,4 +65,3 @@ Este es un microservicio de pagos desarrollado con **Node.js, Express y TypeScri
 ## Mensajes de error
 
 Los mensajes de error están centralizados en la carpeta `config/errors`.
-

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import PaymentService from '../services/paymentService';
-import { MESSAGES } from '../config/constants/messages';
+import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../config/constants/messages';
 
 class PaymentController {
   static async getPayments(req: Request, res: Response): Promise<Response> {
@@ -9,7 +9,7 @@ class PaymentController {
       return res.status(200).json({ data: payments });
     } catch (error) {
       console.error('Error en getPayments:', error.message);
-      return res.status(500).json({ error: MESSAGES.PAYMENT.PROCESS_ERROR });
+      return res.status(500).json({ error: ERROR_MESSAGES.PAYMENT.PROCESS_ERROR });
     }
   }
 
@@ -18,12 +18,12 @@ class PaymentController {
     try {
       const payment = await PaymentService.getPaymentById(Number(id));
       if (!payment) {
-        return res.status(404).json({ message: MESSAGES.PAYMENT.NOT_FOUND });
+        return res.status(404).json({ message: ERROR_MESSAGES.PAYMENT.NOT_FOUND });
       }
       return res.status(200).json(payment);
     } catch (error) {
       console.error('Error en getPaymentById:', error.message);
-      return res.status(500).json({ message: MESSAGES.PAYMENT.PROCESS_ERROR, error });
+      return res.status(500).json({ message: ERROR_MESSAGES.PAYMENT.PROCESS_ERROR, error });
     }
   }
 
@@ -31,7 +31,7 @@ class PaymentController {
     const { product_id, quantity, payment_method } = req.body;
 
     if (!product_id || quantity <= 0 || !payment_method) {
-      return res.status(400).json({ message: MESSAGES.VALIDATION.REQUIRED_FIELDS });
+      return res.status(400).json({ message: ERROR_MESSAGES.VALIDATION.REQUIRED_FIELDS });
     }
 
     try {
@@ -39,7 +39,7 @@ class PaymentController {
       return res.status(201).json(newPayment);
     } catch (error) {
       console.error('Error en processPayment:', error.message);
-      return res.status(500).json({ message: MESSAGES.PAYMENT.PROCESS_ERROR });
+      return res.status(500).json({ message: ERROR_MESSAGES.PAYMENT.PROCESS_ERROR });
     }
   }
 
@@ -48,10 +48,10 @@ class PaymentController {
 
     try {
       const message = await PaymentService.compensatePayment(Number(paymentId));
-      return res.json({ message });
+      return res.json({ message: SUCCESS_MESSAGES.PAYMENT.REVERT_SUCCESS });
     } catch (error) {
       console.error('Error al revertir el pago:', error.message);
-      return res.status(500).json({ error: MESSAGES.PAYMENT.REVERT_ERROR });
+      return res.status(500).json({ error: ERROR_MESSAGES.PAYMENT.REVERT_ERROR });
     }
   }
 }

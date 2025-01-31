@@ -1,10 +1,11 @@
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
+import { DYNAMIC_MESSAGES } from '../config/constants/messages';
 
 axiosRetry(axios, {
   retries: 3, // Número de reintentos
   retryDelay: (retryCount) => {
-    console.log(`Intento de reintento: ${retryCount}`);
+    console.log(DYNAMIC_MESSAGES.RETRY_ATTEMPT(retryCount));
     return retryCount * 1000; // Retraso entre reintentos (en milisegundos)
   },
   retryCondition: (error) => {

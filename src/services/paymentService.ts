@@ -2,7 +2,7 @@ import axios from './axiosRetryConfig';
 import sequelize from '../config/db';
 import Payments from '../models/Payment.model';
 import { config } from '../config/config';
-import { MESSAGES } from '../config/constants/messages';
+import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../config/constants/messages';
 
 const { inventoryServiceUrl, productServiceUrl } = config;
 
@@ -28,19 +28,19 @@ class PaymentService {
       const stock = stockResponse.data;
 
       if (!stock) {
-        throw new Error(MESSAGES.PAYMENT.STOCK_FETCH_ERROR);
+        throw new Error(ERROR_MESSAGES.PAYMENT.STOCK_FETCH_ERROR);
       }
 
       const productResponse = await axios.get(`${productServiceUrl}/${product_id}`);
       const product = productResponse.data;
 
       if (!product || !product.data) {
-        throw new Error(MESSAGES.PAYMENT.PRODUCT_FETCH_ERROR);
+        throw new Error(ERROR_MESSAGES.PAYMENT.PRODUCT_FETCH_ERROR);
       }
 
       if (stock.quantity < quantity) {
         await transaction.rollback();
-        throw new Error(MESSAGES.PAYMENT.STOCK_NOT_AVAILABLE);
+        throw new Error(ERROR_MESSAGES.PAYMENT.STOCK_NOT_AVAILABLE);
       }
 
       const price = product.data.price;
@@ -77,12 +77,12 @@ class PaymentService {
 
       if (!payment) {
         await transaction.rollback();
-        throw new Error(MESSAGES.PAYMENT.NOT_FOUND);
+        throw new Error(ERROR_MESSAGES.PAYMENT.NOT_FOUND);
       }
 
       await payment.destroy({ transaction });
       await transaction.commit();
-      return MESSAGES.PAYMENT.REVERT_SUCCESS;
+      return SUCCESS_MESSAGES.PAYMENT.REVERT_SUCCESS;
     } catch (error) {
       await transaction.rollback();
       throw error;

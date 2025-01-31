@@ -1,5 +1,5 @@
-import axios from '../config/axiosRetryConfig';
-import db from '../config/db';
+import axios from './axiosRetryConfig';
+import sequelize from '../config/db';
 import Payments from '../models/Payment.model';
 import { config } from '../config/config';
 import { MESSAGES } from '../config/constants/messages';
@@ -21,7 +21,7 @@ class PaymentService {
   }
 
   static async processPayment(product_id: number, quantity: number, payment_method: string) {
-    const transaction = await db.transaction();
+    const transaction = await sequelize.transaction();
 
     try {
       const stockResponse = await axios.get(`${inventoryServiceUrl}/${product_id}`);
@@ -70,7 +70,7 @@ class PaymentService {
   }
 
   static async compensatePayment(paymentId: number) {
-    const transaction = await db.transaction();
+    const transaction = await sequelize.transaction();
 
     try {
       const payment = await Payments.findByPk(paymentId, { transaction });

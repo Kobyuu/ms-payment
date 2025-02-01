@@ -1,0 +1,35 @@
+# Ignorar dependencias instaladas (se instalarán dentro del contenedor)
+node_modules/
+
+# Ignorar archivos generados por TypeScript
+dist/
+build/
+
+# Ignorar archivos de salida de compilación de TypeScript
+*.js
+*.jsx
+*.js.map
+*.d.ts
+*.d.ts.map
+
+# Ignorar configuraciones específicas del entorno local
+.env
+.env.local
+.env.*.local
+
+# Ignorar archivos de logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignorar configuraciones específicas del editor
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Ignorar carpetas de caché
+.cache/
+.eslintcache/
+turbo/

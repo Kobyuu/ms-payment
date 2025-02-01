@@ -1,6 +1,6 @@
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
-import { DYNAMIC_MESSAGES } from '../config/constants/messages';
+import { DYNAMIC_MESSAGES } from './constants';
 
 axiosRetry(axios, {
   retries: 3, // Número de reintentos

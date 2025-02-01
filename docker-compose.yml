@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  web:
+    build: ./microservicios/ms-payment
+    working_dir: /app
+    volumes:
+      - ./microservicios/ms-payment:/app
+    ports:
+      - "5001:4003"
+    command: npm run dev
+    depends_on:
+      - db
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: banana
+      POSTGRES_DB: microservicios
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+
+volumes:
+  pg-data:

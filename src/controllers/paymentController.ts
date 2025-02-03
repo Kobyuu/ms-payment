@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import PaymentService from '../services/paymentService';
-import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../config/constants/messages';
+import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../config/constants';
 
 class PaymentController {
   static async getPayments(req: Request, res: Response): Promise<Response> {
@@ -30,7 +30,10 @@ class PaymentController {
   static async processPayment(req: Request, res: Response): Promise<Response> {
     const { product_id, quantity, payment_method } = req.body;
 
+    console.log('Procesando pago:', { product_id, quantity, payment_method }); // Agrega este log
+
     if (!product_id || quantity <= 0 || !payment_method) {
+      console.error('Error de validación en el controlador: Campos obligatorios faltantes');
       return res.status(400).json({ message: ERROR_MESSAGES.VALIDATION.REQUIRED_FIELDS });
     }
 

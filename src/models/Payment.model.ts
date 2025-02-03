@@ -20,7 +20,7 @@ class Payments extends Model {
     type: DataType.STRING,
     allowNull: false,
   })
-  declare payment_method: string; // Puede ser "tarjeta", "efectivo", etc.
+  declare payment_method: string;
 }
 
 export default Payments;

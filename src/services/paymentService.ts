@@ -2,7 +2,7 @@ import axios from '../config/axiosRetryConfig';
 import sequelize from '../config/db';
 import Payments from '../models/Payment.model';
 import { config } from '../config/environment';
-import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../config/constants/messages';
+import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../config/constants';
 
 const { inventoryServiceUrl, productServiceUrl } = config;
 

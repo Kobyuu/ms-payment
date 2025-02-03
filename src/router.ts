@@ -8,7 +8,7 @@ const router = Router();
 router.get('/', handleInputErrors, PaymentController.getPayments);
 
 // Ruta para obtener un pago específico por ID
-router.get('/id', handleInputErrors, PaymentController.getPaymentById);
+router.get('/:id', handleInputErrors, PaymentController.getPaymentById);
 
 // Ruta para procesar un nuevo pago
 router.post('/', validatePayment, handleInputErrors, PaymentController.processPayment);

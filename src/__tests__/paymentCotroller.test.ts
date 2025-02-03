@@ -1,7 +1,18 @@
 import request from 'supertest';
 import server from '../server';
 import PaymentService from '../services/paymentService';
-import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../config/constants/messages';
+import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../config/constants';
+import sequelize from '../config/db';
+
+beforeAll(async () => {
+  await sequelize.authenticate();
+  console.log('Conexión a la base de datos establecida exitosamente.');
+});
+
+afterAll(async () => {
+  await sequelize.close();
+  console.log('Conexión a la base de datos cerrada exitosamente.');
+});
 
 // Mock de PaymentService
 jest.mock('../services/paymentService');

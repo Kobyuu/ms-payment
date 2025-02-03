@@ -1,7 +1,6 @@
 import express from 'express';
 import router from './router';
 import sequelize from './config/db';
-import { config } from './config/environment';
 import { circuitBreakerMiddleware } from './middleware/circuitBreaker';
 import { rateLimiter } from './middleware/rateLimiter';
 

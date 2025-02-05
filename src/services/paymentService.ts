@@ -3,11 +3,12 @@ import sequelize from '../config/db';
 import Payments from '../models/Payment.model';
 import { config } from '../config/constants/environment';
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../config/constants';
+import { Payment } from '../types/types';
 
 const { inventoryServiceUrl, productServiceUrl } = config;
 
 class PaymentService {
-  static async getPayments() {
+  static async getPayments(): Promise<Payment[]> {
     try {
       return Payments.findAll({
         attributes: { exclude: ['createdAt', 'updatedAt'] },
@@ -19,13 +20,13 @@ class PaymentService {
     }
   }
 
-  static async getPaymentById(id: number) {
+  static async getPaymentById(id: number): Promise<Payment | null> {
     return Payments.findByPk(id, {
       attributes: { exclude: ['createdAt', 'updatedAt'] },
     });
   }
 
-  static async processPayment(product_id: number, quantity: number, payment_method: string) {
+  static async processPayment(product_id: number, quantity: number, payment_method: string): Promise<Payment> {
     const transaction = await sequelize.transaction();
 
     try {
@@ -74,7 +75,7 @@ class PaymentService {
     }
   }
 
-  static async compensatePayment(paymentId: number) {
+  static async compensatePayment(paymentId: number): Promise<string> {
     const transaction = await sequelize.transaction();
 
     try {

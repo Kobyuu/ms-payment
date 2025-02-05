@@ -17,6 +17,7 @@ export const ERROR_MESSAGES = {
   GENERAL: {
     DB_CONNECTION_ERROR: 'No se pudo conectar a la base de datos:',
     ENV_VAR_NOT_DEFINED: 'Variable de entorno no definida',
+    SERVICE_UNAVAILABLE: 'Servicio no disponible',
   },
   REDIS: {
     CONNECTION_ERROR: 'Error al conectar con Redis:',

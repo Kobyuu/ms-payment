@@ -1,7 +1,7 @@
 import express from 'express';
 import router from './router';
 import sequelize from './config/db';
-import { circuitBreakerMiddleware } from './middleware/circuitBreaker';
+import { circuitBreakerMiddleware } from './middleware/circuitBreaker'; //esto se va al router.ts
 import { rateLimiter } from './middleware/rateLimiter';
 
 const server = express();
@@ -16,7 +16,7 @@ server.use(express.urlencoded({ extended: true }));
 server.use(rateLimiter);
 
 // Middleware de circuito de interrupción
-server.use(circuitBreakerMiddleware);
+server.use(circuitBreakerMiddleware);// borrar
 
 server.use('/api/payment', router);
 

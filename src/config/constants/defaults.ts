@@ -1,4 +1,8 @@
 export const DEFAULTS = {
   RETRY_COUNT: 3,
   OUTPUT_STOCK: 2,
+  REDIS_HOST: 'localhost',
+  REDIS_PORT: 6379,
+  REDIS_RETRY_DELAY: 2000,
+  PORT: 4003,
 };

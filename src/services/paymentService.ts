@@ -1,17 +1,22 @@
-import axios from '../config/axiosRetryConfig';
+import axios from '../config/axiosClient';
 import sequelize from '../config/db';
 import Payments from '../models/Payment.model';
-import { config } from '../config/environment';
+import { config } from '../config/constants/environment';
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../config/constants';
 
 const { inventoryServiceUrl, productServiceUrl } = config;
 
 class PaymentService {
   static async getPayments() {
-    return Payments.findAll({
-      attributes: { exclude: ['createdAt', 'updatedAt'] },
-      order: [['createdAt', 'DESC']],
-    });
+    try {
+      return Payments.findAll({
+        attributes: { exclude: ['createdAt', 'updatedAt'] },
+        order: [['createdAt', 'DESC']],
+      });
+    } catch (error) {
+      console.error('Error en PaymentService.getPayments:', error); // Imprime el error completo
+      throw error;
+    }
   }
 
   static async getPaymentById(id: number) {

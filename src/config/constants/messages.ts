@@ -12,10 +12,14 @@ export const ERROR_MESSAGES = {
     STOCK_FETCH_ERROR: 'No se pudo obtener el stock del producto',
     PRODUCT_FETCH_ERROR: 'No se pudo obtener la información del producto',
     REVERT_ERROR: 'Error al revertir el pago',
+    VALIDATION_ERROR: 'Error de validación en el controlador: Campos obligatorios faltantes',
   },
   GENERAL: {
     DB_CONNECTION_ERROR: 'No se pudo conectar a la base de datos:',
     ENV_VAR_NOT_DEFINED: 'Variable de entorno no definida',
+  },
+  REDIS: {
+    CONNECTION_ERROR: 'Error al conectar con Redis:',
   },
 };
 
@@ -25,6 +29,9 @@ export const SUCCESS_MESSAGES = {
   },
   GENERAL: {
     DB_CONNECTION_SUCCESS: 'Conexión a la base de datos establecida exitosamente.',
+  },
+  REDIS: {
+    CONNECTION_SUCCESS: 'Conexión a Redis establecida exitosamente.',
   },
 };
 

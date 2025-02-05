@@ -38,4 +38,5 @@ export const SUCCESS_MESSAGES = {
 
 export const DYNAMIC_MESSAGES = {
   RETRY_ATTEMPT: (retryCount: number) => `Intento de reintento: ${retryCount}`,
+  SERVER_START: (port: number) => `REST API en el puerto ${port}`,
 };

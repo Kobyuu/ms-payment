@@ -1,11 +1,8 @@
-import axios from '../config/axiosClient';
 import sequelize from '../config/db';
 import Payments from '../models/Payment.model';
-import { config } from '../config/constants/environment';
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../config/constants';
 import { Payment } from '../types/types';
-
-const { inventoryServiceUrl, productServiceUrl } = config;
+import { fetchStock, fetchProduct, calculateTotalPrice, updateInventory } from '../utils/utils';
 
 class PaymentService {
   static async getPayments(): Promise<Payment[]> {
@@ -30,15 +27,13 @@ class PaymentService {
     const transaction = await sequelize.transaction();
 
     try {
-      const stockResponse = await axios.get(`${inventoryServiceUrl}/${product_id}`);
-      const stock = stockResponse.data;
+      const stock = await fetchStock(product_id);
 
       if (!stock) {
         throw new Error(ERROR_MESSAGES.PAYMENT.STOCK_FETCH_ERROR);
       }
 
-      const productResponse = await axios.get(`${productServiceUrl}/${product_id}`);
-      const product = productResponse.data;
+      const product = await fetchProduct(product_id);
 
       if (!product || !product.data) {
         throw new Error(ERROR_MESSAGES.PAYMENT.PRODUCT_FETCH_ERROR);
@@ -50,7 +45,7 @@ class PaymentService {
       }
 
       const price = product.data.price;
-      const total = price * quantity;
+      const total = calculateTotalPrice(price, quantity);
 
       const newPayment = await Payments.create(
         {
@@ -61,11 +56,7 @@ class PaymentService {
         { transaction }
       );
 
-      await axios.put(`${inventoryServiceUrl}/update`, {
-        product_id,
-        quantity,
-        input_output: 2,
-      });
+      await updateInventory(product_id, quantity);
 
       await transaction.commit();
       return newPayment;

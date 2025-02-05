@@ -62,6 +62,16 @@ Este es un microservicio de pagos desarrollado con **Node.js, Express y TypeScri
 - **GET** `/api/payments/:id`: Obtiene un pago por su ID.
 - **DELETE** `/api/payments/:paymentId`: Revierte un pago existente.
 
+## Pruebas
+
+Este proyecto utiliza **Jest** para las pruebas unitarias e integradas. Para ejecutar las pruebas, utiliza el siguiente comando:
+
+```sh
+npm test
+```
+
+Las pruebas se encuentran en la carpeta `src/__tests__`.
+
 ## Mensajes de error
 
 Los mensajes de error están centralizados en la carpeta `config/errors`.

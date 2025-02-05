@@ -3,7 +3,7 @@ import axiosRetry from 'axios-retry';
 import MockAdapter from 'axios-mock-adapter';
 import { DYNAMIC_MESSAGES } from '../config/constants';
 import { config } from '../config/constants/environment';
-import { redis } from '../config/redis';
+import redisClient from '../config/redis';
 
 jest.mock('axios');
 jest.mock('axios-retry');
@@ -14,8 +14,8 @@ describe('Axios Retry Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mock = new MockAdapter(axios);
-    jest.spyOn(redis, 'get').mockResolvedValue(null);
-    jest.spyOn(redis, 'setex').mockResolvedValue('OK');
+    jest.spyOn(redisClient, 'get').mockResolvedValue(null);
+    jest.spyOn(redisClient, 'setex').mockResolvedValue('OK');
     require('../config/axiosClient'); // Importa el archivo para que se ejecute la configuración
   });
 
@@ -76,15 +76,15 @@ describe('Axios Retry Tests', () => {
     const cachedData = { data: 'cached response' };
 
     // First request - no cache
-    jest.spyOn(redis, 'get').mockResolvedValueOnce(null);
+    jest.spyOn(redisClient, 'get').mockResolvedValueOnce(null);
     mock.onGet(endpoint).replyOnce(200, cachedData);
 
     const response1 = await axios.get(endpoint);
     expect(response1.data).toEqual(cachedData);
-    expect(redis.setex).toHaveBeenCalled();
+    expect(redisClient.setex).toHaveBeenCalled();
 
     // Second request - cache
-    jest.spyOn(redis, 'get').mockResolvedValueOnce(JSON.stringify(cachedData));
+    jest.spyOn(redisClient, 'get').mockResolvedValueOnce(JSON.stringify(cachedData));
 
     const response2 = await axios.get(endpoint);
     expect(response2.data).toEqual(cachedData);
@@ -100,6 +100,6 @@ describe('Axios Retry Tests', () => {
   });
 
   afterAll(async () => {
-    await redis.quit();
+    await redisClient.quit();
   });
 });

@@ -35,14 +35,14 @@ describe('Axios Retry Tests', () => {
   it('should log retry attempts', () => {
     console.log = jest.fn();
 
-    const retryDelay = (axiosRetry as jest.Mock).mock.calls[0][1].retryDelay;
+    const retryDelay = (axiosRetry as unknown as jest.Mock).mock.calls[0][1].retryDelay;
     retryDelay(2);
 
     expect(console.log).toHaveBeenCalledWith(DYNAMIC_MESSAGES.RETRY_ATTEMPT(2));
   });
 
   it('should retry on server errors and connection aborted', () => {
-    const retryCondition = (axiosRetry as jest.Mock).mock.calls[0][1].retryCondition;
+    const retryCondition = (axiosRetry as unknown as jest.Mock).mock.calls[0][1].retryCondition;
 
     expect(retryCondition({ response: { status: 500 } })).toBe(true);
     expect(retryCondition({ code: 'ECONNABORTED' })).toBe(true);

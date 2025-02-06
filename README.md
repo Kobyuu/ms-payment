@@ -6,7 +6,7 @@ Este es un microservicio de pagos desarrollado con **Node.js, Express y TypeScri
 
 1. Clona el repositorio:
    ```sh
-   git clone https://github.com/TuUsuario/ms-payment.git
+   git clone https://github.com/Kobyuu/ms-payment.git
    ```
 2. Navega al directorio del proyecto:
    ```sh

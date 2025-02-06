@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { ERROR_MESSAGES } from '../config/constants';
-import { Payment } from '../types/types';
 import { config } from '../config/constants/environment';
 
 const { inventoryServiceUrl, productServiceUrl } = config;

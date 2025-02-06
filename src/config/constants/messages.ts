@@ -22,6 +22,9 @@ export const ERROR_MESSAGES = {
   REDIS: {
     CONNECTION_ERROR: 'Error al conectar con Redis:',
   },
+  RATE_LIMITER: {
+    TOO_MANY_REQUESTS: 'Demasiadas solicitudes desde esta IP, por favor intente nuevamente más tarde.',
+  },
 };
 
 export const SUCCESS_MESSAGES = {

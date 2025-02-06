@@ -1,13 +1,13 @@
 import { Sequelize } from 'sequelize-typescript';
 import dotenv from 'dotenv';
-import { config } from './constants/environment';
+import { CONFIG } from './constants/environment';
 import Payments from '../models/Payment.model';
 import colors from 'colors';
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from './constants';
 
 dotenv.config();
 
-const sequelize = new Sequelize(config.databaseUrl, {
+const sequelize = new Sequelize(CONFIG.DATABASE_URL, {
   models: [Payments],
   logging: false,
 });

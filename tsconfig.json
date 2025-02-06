@@ -12,7 +12,9 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "skipLibCheck": true,
-    "strict": false,
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
     "baseUrl": "./",
     "typeRoots": ["node_modules/@types", "./types"]
   },

@@ -13,7 +13,6 @@ build/
 *.d.ts.map
 
 # Ignorar configuraciones específicas del entorno local
-.env
 .env.local
 .env.*.local
 

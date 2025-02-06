@@ -1,12 +1,12 @@
 import axios from 'axios';
 import { ERROR_MESSAGES } from '../config/constants';
-import { config } from '../config/constants/environment';
+import { CONFIG } from '../config/constants/environment';
 
-const { inventoryServiceUrl, productServiceUrl } = config;
+const { INVENTORY_SERVICE_URL, PRODUCT_SERVICE_URL } = CONFIG;
 
 export const fetchStock = async (product_id: number): Promise<any> => {
   try {
-    const stockResponse = await axios.get(`${inventoryServiceUrl}/${product_id}`);
+    const stockResponse = await axios.get(`${INVENTORY_SERVICE_URL}/${product_id}`);
     return stockResponse.data;
   } catch (error) {
     throw new Error(ERROR_MESSAGES.PAYMENT.STOCK_FETCH_ERROR);
@@ -15,7 +15,7 @@ export const fetchStock = async (product_id: number): Promise<any> => {
 
 export const fetchProduct = async (product_id: number): Promise<any> => {
   try {
-    const productResponse = await axios.get(`${productServiceUrl}/${product_id}`);
+    const productResponse = await axios.get(`${PRODUCT_SERVICE_URL}/${product_id}`);
     return productResponse.data;
   } catch (error) {
     throw new Error(ERROR_MESSAGES.PAYMENT.PRODUCT_FETCH_ERROR);
@@ -28,7 +28,7 @@ export const calculateTotalPrice = (price: number, quantity: number): number => 
 
 export const updateInventory = async (product_id: number, quantity: number): Promise<void> => {
   try {
-    await axios.put(`${inventoryServiceUrl}/update`, {
+    await axios.put(`${INVENTORY_SERVICE_URL}/update`, {
       product_id,
       quantity,
       input_output: 2,

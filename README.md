@@ -30,8 +30,10 @@ Este es un microservicio de pagos desarrollado con **Node.js, Express y TypeScri
    
    # Configuraciones adicionales
    RETRY_COUNT=3
+   RETRY_DELAY=1000
    OUTPUT_STOCK=2
-   PORT=3000
+   CACHE_EXPIRY=3600
+   PORT=4003
    ```
 
 ## Uso sin Docker
@@ -40,7 +42,7 @@ Este es un microservicio de pagos desarrollado con **Node.js, Express y TypeScri
    ```sh
    npm run dev
    ```
-2. El servidor estará disponible en `http://localhost:3000`.
+2. El servidor estará disponible en `http://localhost:4003`.
 
 ## Uso con Docker
 
@@ -49,7 +51,7 @@ Este es un microservicio de pagos desarrollado con **Node.js, Express y TypeScri
    ```sh
    docker-compose up --build
    ```
-3. El servidor estará disponible en `http://localhost:3000`.
+3. El servidor estará disponible en `http://localhost:5003`.
 4. Para detener los contenedores:
    ```sh
    docker-compose down
@@ -57,10 +59,10 @@ Este es un microservicio de pagos desarrollado con **Node.js, Express y TypeScri
 
 ## Rutas de la API
 
-- **POST** `/api/payments`: Procesa un nuevo pago.
-- **GET** `/api/payments`: Obtiene todos los pagos.
-- **GET** `/api/payments/:id`: Obtiene un pago por su ID.
-- **DELETE** `/api/payments/:paymentId`: Revierte un pago existente.
+- **POST** `/api/payment`: Procesa un nuevo pago.
+- **GET** `/api/payment`: Obtiene todos los pagos.
+- **GET** `/api/payment/:id`: Obtiene un pago por su ID.
+- **DELETE** `/api/payment/:paymentId`: Revierte un pago existente.
 
 ## Pruebas
 
@@ -74,4 +76,4 @@ Las pruebas se encuentran en la carpeta `src/__tests__`.
 
 ## Mensajes de error
 
-Los mensajes de error están centralizados en la carpeta `config/errors`.
+Los mensajes de error están centralizados en la carpeta `config/constants/messages.ts`.

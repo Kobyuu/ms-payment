@@ -24,7 +24,7 @@ class PaymentController {
       }
       return res.status(HTTP_STATUS.OK).json(payment);
     } catch (error) {
-      console.error(ERROR_MESSAGES.PAYMENT.PROCESS_ERROR, error.message);
+      console.error(ERROR_MESSAGES.PAYMENT.PROCESS_ERROR, (error as any).message);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: ERROR_MESSAGES.PAYMENT.PROCESS_ERROR, error } as ErrorResponse);
     }
   }
@@ -43,7 +43,7 @@ class PaymentController {
       const newPayment = await PaymentService.processPayment(product_id, quantity, payment_method);
       return res.status(HTTP_STATUS.CREATED).json(newPayment);
     } catch (error) {
-      console.error(ERROR_MESSAGES.PAYMENT.PROCESS_ERROR, error.message);
+      console.error(ERROR_MESSAGES.PAYMENT.PROCESS_ERROR, (error as any).message);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: ERROR_MESSAGES.PAYMENT.PROCESS_ERROR } as ErrorResponse);
     }
   }
@@ -55,7 +55,7 @@ class PaymentController {
       const message = await PaymentService.compensatePayment(Number(paymentId));
       return res.status(HTTP_STATUS.OK).json({ message: SUCCESS_MESSAGES.PAYMENT.REVERT_SUCCESS } as SuccessResponse);
     } catch (error) {
-      console.error(ERROR_MESSAGES.PAYMENT.REVERT_ERROR, error.message);
+      console.error(ERROR_MESSAGES.PAYMENT.REVERT_ERROR, (error as any).message);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: ERROR_MESSAGES.PAYMENT.REVERT_ERROR, error } as ErrorResponse);
     }
   }

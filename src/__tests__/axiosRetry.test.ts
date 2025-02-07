@@ -2,8 +2,8 @@ import axios from 'axios';
 import axiosRetry from 'axios-retry';
 import MockAdapter from 'axios-mock-adapter';
 import { DYNAMIC_MESSAGES } from '../config/constants';
-import { config } from '../config/constants/environment';
-import redisClient from '../config/redis';
+import { CONFIG } from '../config/constants/environment';
+import redisClient from '../config/redisClient';
 
 jest.mock('axios');
 jest.mock('axios-retry');
@@ -15,7 +15,7 @@ describe('Axios Retry Tests', () => {
     jest.clearAllMocks();
     mock = new MockAdapter(axios);
     jest.spyOn(redisClient, 'get').mockResolvedValue(null);
-    jest.spyOn(redisClient, 'setex').mockResolvedValue('OK');
+    jest.spyOn(redisClient, 'set').mockResolvedValue('OK');
     require('../config/axiosClient'); // Importa el archivo para que se ejecute la configuración
   });
 
@@ -26,7 +26,7 @@ describe('Axios Retry Tests', () => {
 
   it('should configure axiosRetry with correct options', () => {
     expect(axiosRetry).toHaveBeenCalledWith(axios, {
-      retries: config.retryCount,
+      retries: CONFIG.RETRY_COUNT,
       retryDelay: expect.any(Function),
       retryCondition: expect.any(Function),
     });
@@ -81,7 +81,7 @@ describe('Axios Retry Tests', () => {
 
     const response1 = await axios.get(endpoint);
     expect(response1.data).toEqual(cachedData);
-    expect(redisClient.setex).toHaveBeenCalled();
+    expect(redisClient.set).toHaveBeenCalled();
 
     // Second request - cache
     jest.spyOn(redisClient, 'get').mockResolvedValueOnce(JSON.stringify(cachedData));

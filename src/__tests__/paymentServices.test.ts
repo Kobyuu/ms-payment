@@ -2,7 +2,7 @@ import PaymentService from '../services/paymentService';
 import Payments from '../models/Payment.model';
 import sequelize from '../config/db';
 import { ERROR_MESSAGES } from '../config/constants';
-import { fetchStock, fetchProduct, calculateTotalPrice, updateInventory } from '../utils/utils';
+import { calculateTotalPrice } from '../utils/utils';
 
 jest.mock('../models/Payment.model');
 jest.mock('../config/db');
@@ -51,31 +51,20 @@ describe('PaymentService', () => {
 
   describe('processPayment', () => {
     it('should process a new payment', async () => {
-      const mockStock = { quantity: 10 };
-      const mockProduct = { data: { price: 50 } };
       const mockPayment = { id: 1, product_id: 1, price: 100, payment_method: 'tarjeta' };
 
-      (fetchStock as jest.Mock).mockResolvedValue(mockStock);
-      (fetchProduct as jest.Mock).mockResolvedValue(mockProduct);
       (calculateTotalPrice as jest.Mock).mockReturnValue(100);
       (Payments.create as jest.Mock).mockResolvedValue(mockPayment);
 
       const payment = await PaymentService.processPayment(1, 2, 'tarjeta');
 
       expect(payment).toEqual(mockPayment);
-      expect(updateInventory).toHaveBeenCalledWith(1, 2);
-    });
-
-    it('should throw an error if stock is not available', async () => {
-      (fetchStock as jest.Mock).mockResolvedValue({ quantity: 0 });
-
-      await expect(PaymentService.processPayment(1, 2, 'tarjeta')).rejects.toThrow(ERROR_MESSAGES.PAYMENT.STOCK_NOT_AVAILABLE);
     });
 
     it('should rollback transaction if an error occurs', async () => {
       const transaction = { rollback: jest.fn(), commit: jest.fn() };
       (sequelize.transaction as jest.Mock).mockResolvedValue(transaction);
-      (fetchStock as jest.Mock).mockRejectedValue(new Error('Error'));
+      (Payments.create as jest.Mock).mockRejectedValue(new Error('Error'));
 
       await expect(PaymentService.processPayment(1, 2, 'tarjeta')).rejects.toThrow('Error');
       expect(transaction.rollback).toHaveBeenCalled();

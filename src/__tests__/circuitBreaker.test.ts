@@ -1,8 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { withCircuitBreaker, breakers } from '../middleware/circuitBreaker';
 import { ERROR_MESSAGES } from '../config/constants';
+import PaymentService from '../services/paymentService';
 
 jest.mock('opossum');
+jest.mock('../services/paymentService');
 
 describe('Circuit Breaker Middleware', () => {
   const mockRequest = {} as Request;
@@ -17,7 +19,10 @@ describe('Circuit Breaker Middleware', () => {
   });
 
   it('should call next function when circuit is closed', async () => {
-    breakers.getAllPayments.fire = jest.fn().mockResolvedValueOnce(undefined);
+    breakers.getAllPayments.fire = jest.fn().mockImplementationOnce(async (req, res, next) => {
+      next();
+    });
+    (PaymentService.getPayments as jest.Mock).mockResolvedValueOnce([]);
 
     await withCircuitBreaker('getAllPayments')(mockRequest, mockResponse, mockNext);
 

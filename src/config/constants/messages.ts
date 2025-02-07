@@ -13,6 +13,7 @@ export const ERROR_MESSAGES = {
     PRODUCT_FETCH_ERROR: 'No se pudo obtener la información del producto',
     REVERT_ERROR: 'Error al revertir el pago',
     VALIDATION_ERROR: 'Error de validación en el controlador: Campos obligatorios faltantes',
+    GET_PAYMENTS_ERROR: 'Error en PaymentService.getPayments:',
   },
   GENERAL: {
     DB_CONNECTION_ERROR: 'No se pudo conectar a la base de datos:',
@@ -25,6 +26,11 @@ export const ERROR_MESSAGES = {
   RATE_LIMITER: {
     TOO_MANY_REQUESTS: 'Demasiadas solicitudes desde esta IP, por favor intente nuevamente más tarde.',
   },
+};
+export const CIRCUIT_BREAKER_MESSAGES = {
+  OPEN: 'Circuito abierto',
+  HALF_OPEN: 'Circuito medio abierto',
+  CLOSED: 'Circuito cerrado'
 };
 
 export const SUCCESS_MESSAGES = {

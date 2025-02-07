@@ -1,26 +1,26 @@
-import { Request, Response, NextFunction } from 'express';
 import CircuitBreaker from 'opossum';
-import { ERROR_MESSAGES } from '../config/constants';
+import { Request, Response, NextFunction } from 'express';
+import { ERROR_MESSAGES, HTTP_STATUS, CIRCUIT_BREAKER_MESSAGES } from '../config/constants';
 
 const options = {
-  timeout: 3000, // Si la función tarda más de 3 segundos, se considera un fallo
+  timeout: 3000, // Si la operación tarda más de 3 segundos, se considera un fallo
   errorThresholdPercentage: 50, // Si el 50% de las solicitudes fallan, el circuito se abre
-  resetTimeout: 30000, // Después de 30 segundos, el circuito se cierra de nuevo
+  resetTimeout: 30000 // El circuito se cierra después de 30 segundos
 };
 
 class CustomCircuitBreaker {
   private breaker: CircuitBreaker;
 
-  constructor(operation: Function) {
+  constructor(operation: (req: Request, res: Response, next: NextFunction) => Promise<void>) {
     this.breaker = new CircuitBreaker(operation, options);
 
     this.breaker.fallback(() => {
       throw new Error(ERROR_MESSAGES.GENERAL.SERVICE_UNAVAILABLE);
     });
 
-    this.breaker.on('open', () => console.log(`Circuit breaker for ${operation.name} is now OPEN`));
-    this.breaker.on('halfOpen', () => console.log(`Circuit breaker for ${operation.name} is now HALF_OPEN`));
-    this.breaker.on('close', () => console.log(`Circuit breaker for ${operation.name} is now CLOSED`));
+    this.breaker.on('open', () => console.log(CIRCUIT_BREAKER_MESSAGES.OPEN));
+    this.breaker.on('halfOpen', () => console.log(CIRCUIT_BREAKER_MESSAGES.HALF_OPEN));
+    this.breaker.on('close', () => console.log(CIRCUIT_BREAKER_MESSAGES.CLOSED));
   }
 
   async fire(...args: any[]): Promise<any> {
@@ -50,7 +50,7 @@ export const withCircuitBreaker = (operation: keyof typeof breakers) => {
     try {
       await breaker.fire(req, res, next);
     } catch (error) {
-      res.status(503).json({ message: ERROR_MESSAGES.GENERAL.SERVICE_UNAVAILABLE });
+      res.status(HTTP_STATUS.SERVICE_UNAVAILABLE).json({ message: ERROR_MESSAGES.GENERAL.SERVICE_UNAVAILABLE });
     }
   };
 };

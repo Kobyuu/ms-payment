@@ -39,7 +39,7 @@ describe('PaymentController', () => {
       const response = await request(server).get('/api/payment');
 
       expect(response.status).toBe(500);
-      expect(response.body.error).toBe(ERROR_MESSAGES.PAYMENT.PROCESS_ERROR);
+      expect(response.body.message).toBe(ERROR_MESSAGES.PAYMENT.PROCESS_ERROR);
     });
   });
 
@@ -123,7 +123,7 @@ describe('PaymentController', () => {
       const response = await request(server).delete('/api/payment/1');
 
       expect(response.status).toBe(500);
-      expect(response.body.error).toBe(ERROR_MESSAGES.PAYMENT.REVERT_ERROR);
+      expect(response.body.message).toBe(ERROR_MESSAGES.PAYMENT.REVERT_ERROR);
     });
   });
 });

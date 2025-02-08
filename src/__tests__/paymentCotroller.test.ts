@@ -3,6 +3,7 @@ import server from '../server';
 import PaymentService from '../services/paymentService';
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../config/constants';
 import sequelize from '../config/db';
+import redisClient from '../config/redisClient';
 
 beforeAll(async () => {
   await sequelize.authenticate();
@@ -11,7 +12,8 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await sequelize.close();
-  console.log('Conexión a la base de datos cerrada exitosamente.');
+  await redisClient.quit();
+  console.log('Conexión a la base de datos y Redis cerrada exitosamente.');
 });
 
 // Mock de PaymentService

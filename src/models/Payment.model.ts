@@ -2,6 +2,7 @@ import { Table, Column, Model, DataType } from 'sequelize-typescript';
 
 @Table({
   tableName: 'payments',
+  timestamps: false
 })
 class Payments extends Model {
   @Column({

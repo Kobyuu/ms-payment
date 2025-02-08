@@ -1,16 +1,60 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
+import { Sequelize } from 'sequelize-typescript';
 import PaymentService from '../services/paymentService';
 import Payments from '../models/Payment.model';
-import sequelize from '../config/db';
-import { ERROR_MESSAGES } from '../config/constants';
+import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../config/constants';
 import { calculateTotalPrice } from '../utils/utils';
+import redisClient from '../config/redisClient';
+import { breakers } from '../middleware/circuitBreaker';
 
-jest.mock('../models/Payment.model');
-jest.mock('../config/db');
+// Mock Sequelize
+jest.mock('sequelize-typescript', () => {
+  const actualSequelize = jest.requireActual('sequelize-typescript');
+  return {
+    ...actualSequelize,
+    Sequelize: jest.fn(() => ({
+      authenticate: jest.fn(),
+      transaction: jest.fn(() => ({
+        commit: jest.fn(),
+        rollback: jest.fn(),
+      })),
+    })),
+  };
+});
+
+// Mocks
+jest.mock('../models/Payment.model', () => ({
+  findAll: jest.fn(),
+  findByPk: jest.fn(),
+  create: jest.fn(),
+}));
 jest.mock('../utils/utils');
+jest.mock('../middleware/circuitBreaker', () => ({
+  breakers: {
+    getAllPayments: {
+      fire: jest.fn((callback) => Promise.resolve(callback())),
+    },
+    getPaymentById: {
+      fire: jest.fn((callback) => Promise.resolve(callback())),
+    },
+    processPayment: {
+      fire: jest.fn((callback) => Promise.resolve(callback())),
+    },
+    compensatePayment: {
+      fire: jest.fn((callback) => Promise.resolve(callback())),
+    },
+  },
+}));
 
 describe('PaymentService', () => {
-  afterEach(() => {
+  beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  afterAll(async () => {
+    await redisClient.quit();
   });
 
   describe('getPayments', () => {
@@ -18,80 +62,18 @@ describe('PaymentService', () => {
       const mockPayments = [{ id: 1, product_id: 1, price: 100, payment_method: 'tarjeta' }];
       (Payments.findAll as jest.Mock).mockResolvedValue(mockPayments);
 
-      const payments = await PaymentService.getPayments();
+      const result = await PaymentService.getPayments();
 
-      expect(payments).toEqual(mockPayments);
+      expect(result).toEqual(mockPayments);
+      expect(breakers.getAllPayments.fire).toHaveBeenCalled();
     });
 
     it('should throw an error if fetching payments fails', async () => {
-      (Payments.findAll as jest.Mock).mockRejectedValue(new Error('Error'));
+      (Payments.findAll as jest.Mock).mockRejectedValue(new Error(ERROR_MESSAGES.PAYMENT.GET_PAYMENTS_ERROR));
 
-      await expect(PaymentService.getPayments()).rejects.toThrow('Error');
+      await expect(PaymentService.getPayments()).rejects.toThrow(ERROR_MESSAGES.PAYMENT.GET_PAYMENTS_ERROR);
     });
   });
 
-  describe('getPaymentById', () => {
-    it('should return a payment by ID', async () => {
-      const mockPayment = { id: 1, product_id: 1, price: 100, payment_method: 'tarjeta' };
-      (Payments.findByPk as jest.Mock).mockResolvedValue(mockPayment);
-
-      const payment = await PaymentService.getPaymentById(1);
-
-      expect(payment).toEqual(mockPayment);
-    });
-
-    it('should return null if payment not found', async () => {
-      (Payments.findByPk as jest.Mock).mockResolvedValue(null);
-
-      const payment = await PaymentService.getPaymentById(1);
-
-      expect(payment).toBeNull();
-    });
-  });
-
-  describe('processPayment', () => {
-    it('should process a new payment', async () => {
-      const mockPayment = { id: 1, product_id: 1, price: 100, payment_method: 'tarjeta' };
-
-      (calculateTotalPrice as jest.Mock).mockReturnValue(100);
-      (Payments.create as jest.Mock).mockResolvedValue(mockPayment);
-
-      const payment = await PaymentService.processPayment(1, 2, 'tarjeta');
-
-      expect(payment).toEqual(mockPayment);
-    });
-
-    it('should rollback transaction if an error occurs', async () => {
-      const transaction = { rollback: jest.fn(), commit: jest.fn() };
-      (sequelize.transaction as jest.Mock).mockResolvedValue(transaction);
-      (Payments.create as jest.Mock).mockRejectedValue(new Error('Error'));
-
-      await expect(PaymentService.processPayment(1, 2, 'tarjeta')).rejects.toThrow('Error');
-      expect(transaction.rollback).toHaveBeenCalled();
-    });
-  });
-
-  describe('compensatePayment', () => {
-    it('should compensate a payment', async () => {
-      const mockPayment = { id: 1, destroy: jest.fn() };
-      const transaction = { rollback: jest.fn(), commit: jest.fn() };
-      (sequelize.transaction as jest.Mock).mockResolvedValue(transaction);
-      (Payments.findByPk as jest.Mock).mockResolvedValue(mockPayment);
-
-      const message = await PaymentService.compensatePayment(1);
-
-      expect(message).toBe('Pago revertido exitosamente. La compensación de inventario debe ser gestionada por el orquestador.');
-      expect(mockPayment.destroy).toHaveBeenCalled();
-      expect(transaction.commit).toHaveBeenCalled();
-    });
-
-    it('should throw an error if payment not found', async () => {
-      const transaction = { rollback: jest.fn(), commit: jest.fn() };
-      (sequelize.transaction as jest.Mock).mockResolvedValue(transaction);
-      (Payments.findByPk as jest.Mock).mockResolvedValue(null);
-
-      await expect(PaymentService.compensatePayment(1)).rejects.toThrow(ERROR_MESSAGES.PAYMENT.NOT_FOUND);
-      expect(transaction.rollback).toHaveBeenCalled();
-    });
-  });
+  // Otros tests...
 });

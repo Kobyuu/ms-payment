@@ -12,7 +12,6 @@ const parseRedisUrl = (url: string) => {
     };
   } catch (error) {
     console.error('Error parsing Redis URL:', error);
-    // Valores por defecto si hay error en el parsing
     return {
       host: DEFAULTS.REDIS_HOST,
       port: DEFAULTS.REDIS_PORT

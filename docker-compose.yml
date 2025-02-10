@@ -6,15 +6,32 @@ services:
     image: postgres:15
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: banana
-      POSTGRES_DB: ms-payment
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: postgres
     container_name: ms-payment_postgres
     ports:
       - "8432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_payment:/var/lib/postgresql/data
     networks:
       - microservicios-red
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  db-init:
+      image: postgres:15
+      container_name: ms-payment_db-init
+      depends_on:
+        postgres:
+          condition: service_healthy
+      command: >
+        psql -U postgres -h postgres -c "CREATE DATABASE \"ms-payment\";"
+      environment:
+        PGPASSWORD: 1234
+      networks:
+        - microservicios-red
 
   redis:
     image: redis:7
@@ -31,8 +48,8 @@ services:
     container_name: ms-payment_app
     environment:
       # Variables de conexión
-      DATABASE_URL: postgres://postgres:banana@postgres:5432/ms-payment
-      PRODUCT_SERVICE_URL: http://ms-catalog:4001/api/products
+      DATABASE_URL: postgres://postgres:1234@postgres:5432/ms-payment
+      PRODUCT_SERVICE_URL: http://ms-catalog_app:4001/api/products
       
       # Configuración de Redis
       REDIS_URL: redis://redis:6379
@@ -54,11 +71,13 @@ services:
     networks:
       - microservicios-red
     depends_on:
-      - postgres
-      - redis 
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
 volumes:
-  postgres_data:
+  postgres_data_payment:
 networks:
   microservicios-red:
     external: true

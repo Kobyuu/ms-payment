@@ -19,7 +19,7 @@ const parseRedisUrl = (url: string) => {
   }
 };
 
-const redisConfig = parseRedisUrl(CONFIG.REDIS_URL);
+const redisConfig = parseRedisUrl(CONFIG.REDIS_URL || `redis://${DEFAULTS.REDIS_HOST}:${DEFAULTS.REDIS_PORT}`);
 
 const redisClient = process.env.NODE_ENV === 'test' 
   ? new RedisMock() 

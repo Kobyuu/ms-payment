@@ -10,7 +10,7 @@ export const DEFAULTS = {
   // Variables faltantes que están en environment.ts
   RETRY_DELAY: 1000,
   CACHE_EXPIRY: 3600,
-  DATABASE_URL: 'postgres://postgres:banana@postgres:5432/ms-payment',
-  PRODUCT_SERVICE_URL: 'http://ms-catalog:4001/api/products',
+  DATABASE_URL: 'postgres://postgres:1234@postgres:5432/ms-payment',
+  PRODUCT_SERVICE_URL: 'http://ms-catalog_app:4001/api/product',
   REDIS_URL: 'redis://redis:6379'
 };

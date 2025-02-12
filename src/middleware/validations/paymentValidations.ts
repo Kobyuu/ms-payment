@@ -2,11 +2,11 @@ import { Request, Response, NextFunction } from 'express';
 import { ERROR_MESSAGES } from '../../config/constants/messages';
 
 export const validatePayment = (req: Request, res: Response, next: NextFunction) => {
-  const { product_id, quantity, payment_method } = req.body;
+  const { product_id, quantity, payment_method, price } = req.body;
 
-  console.log('Validando pago:', { product_id, quantity, payment_method });
+  console.log('Validando pago:', { product_id, quantity, payment_method, price });
 
-  if (!product_id || !quantity || !payment_method) {
+  if (!product_id || !quantity || !payment_method || price === undefined) {
     console.error(ERROR_MESSAGES.VALIDATION.REQUIRED_FIELDS);
     return res.status(400).json({ message: ERROR_MESSAGES.VALIDATION.REQUIRED_FIELDS });
   }
@@ -19,6 +19,11 @@ export const validatePayment = (req: Request, res: Response, next: NextFunction)
   if (quantity <= 0) {
     console.error(ERROR_MESSAGES.VALIDATION.INVALID_QUANTITY);
     return res.status(400).json({ message: ERROR_MESSAGES.VALIDATION.INVALID_QUANTITY });
+  }
+
+  if (isNaN(Number(price)) || Number(price) < 0) {
+    console.error(ERROR_MESSAGES.VALIDATION.INVALID_PRICE);
+    return res.status(400).json({ message: ERROR_MESSAGES.VALIDATION.INVALID_PRICE });
   }
 
   const validPaymentMethods = ['tarjeta', 'paypal', 'transferencia bancaria'];

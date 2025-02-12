@@ -1,9 +1,10 @@
 export const ERROR_MESSAGES = {
   VALIDATION: {
-    REQUIRED_FIELDS: 'El ID del producto, la cantidad y el método de pago son obligatorios.',
+    REQUIRED_FIELDS: 'El ID del producto, la cantidad, el precio y el método de pago son obligatorios.',
     INVALID_PRODUCT_ID: 'El ID del producto debe ser un número válido y mayor que 0.',
     INVALID_QUANTITY: 'La cantidad debe ser un número mayor a 0.',
     INVALID_PAYMENT_METHOD: 'El método de pago no es válido.',
+    INVALID_PRICE: 'El precio debe ser un número válido y no puede ser negativo.',
   },
   PAYMENT: {
     NOT_FOUND: 'Pago no encontrado',

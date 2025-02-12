@@ -42,7 +42,7 @@ class PaymentService {
       const price = productResponse.data.data.price;
 
       // Validación de precio
-      if (!price || isNaN(price) || price <= 0) {
+      if (typeof price !== 'number' || isNaN(price) || price <= 0) {
         await transaction.rollback();
         throw new Error(ERROR_MESSAGES.PAYMENT.INVALID_PRICE);
       }

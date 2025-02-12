@@ -21,7 +21,7 @@ export const validatePayment = (req: Request, res: Response, next: NextFunction)
     return res.status(400).json({ message: ERROR_MESSAGES.VALIDATION.INVALID_QUANTITY });
   }
 
-  if (isNaN(Number(price)) || Number(price) < 0) {
+  if (typeof price !== 'number' || isNaN(price) || price <= 0) {
     console.error(ERROR_MESSAGES.VALIDATION.INVALID_PRICE);
     return res.status(400).json({ message: ERROR_MESSAGES.VALIDATION.INVALID_PRICE });
   }

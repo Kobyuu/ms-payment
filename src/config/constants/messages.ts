@@ -2,7 +2,7 @@ export const ERROR_MESSAGES = {
   VALIDATION: {
     REQUIRED_FIELDS: 'El ID del producto, la cantidad y el método de pago son obligatorios.',
     INVALID_PRODUCT_ID: 'El ID del producto debe ser un número válido y mayor que 0.',
-    INVALID_QUANTITY: 'La cantidad debe ser un número mayor a 0.',
+    INVALID_QUANTITY: 'La cantidad debe ser un número válido y mayor que 0',
     INVALID_PAYMENT_METHOD: 'El método de pago no es válido.',
   },
   PAYMENT: {
@@ -13,6 +13,7 @@ export const ERROR_MESSAGES = {
     PRODUCT_FETCH_ERROR: 'No se pudo obtener la información del producto',
     REVERT_ERROR: 'Error al revertir el pago',
     VALIDATION_ERROR: 'Error de validación en el controlador: Campos obligatorios faltantes',
+    INVALID_PRICE: 'El precio del producto no es válido o es menor o igual a cero',
     GET_PAYMENTS_ERROR: 'Error en PaymentService.getPayments:',
   },
   GENERAL: {

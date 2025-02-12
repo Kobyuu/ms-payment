@@ -34,17 +34,60 @@ class PaymentController {
 
     console.log('Procesando pago:', { product_id, quantity, payment_method });
 
-    if (!product_id || quantity <= 0 || !payment_method) {
-      console.error(ERROR_MESSAGES.VALIDATION.REQUIRED_FIELDS);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: ERROR_MESSAGES.VALIDATION.REQUIRED_FIELDS } as ErrorResponse);
+    // Validate product_id
+    if (!product_id) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({ 
+        message: ERROR_MESSAGES.VALIDATION.INVALID_PRODUCT_ID 
+      } as ErrorResponse);
+    }
+
+    // Validate quantity
+    if (!quantity || isNaN(quantity) || quantity <= 0) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({ 
+        message: ERROR_MESSAGES.VALIDATION.INVALID_QUANTITY 
+      } as ErrorResponse);
+    }
+
+    // Validate payment_method
+    const validPaymentMethods = ['tarjeta', 'paypal', 'transferencia bancaria'];
+    if (!payment_method || !validPaymentMethods.includes(payment_method)) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({ 
+        message: ERROR_MESSAGES.VALIDATION.INVALID_PAYMENT_METHOD 
+      } as ErrorResponse);
     }
 
     try {
-      const newPayment = await PaymentService.processPayment(product_id, quantity, payment_method);
+      const newPayment = await PaymentService.processPayment(
+        Number(product_id), 
+        Number(quantity), 
+        payment_method
+      );
       return res.status(HTTP_STATUS.CREATED).json(newPayment);
-    } catch (error) {
-      console.error(ERROR_MESSAGES.PAYMENT.PROCESS_ERROR, (error as any).message);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: ERROR_MESSAGES.PAYMENT.PROCESS_ERROR } as ErrorResponse);
+    } catch (error: any) {
+      // Log the actual error for debugging
+      console.error('Payment processing error:', error);
+      
+      // Return specific error messages
+      if (error.message === ERROR_MESSAGES.VALIDATION.INVALID_QUANTITY) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ 
+          message: ERROR_MESSAGES.VALIDATION.INVALID_QUANTITY 
+        } as ErrorResponse);
+      }
+      if (error.message === ERROR_MESSAGES.PAYMENT.INVALID_PRICE) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ 
+          message: ERROR_MESSAGES.PAYMENT.INVALID_PRICE 
+        } as ErrorResponse);
+      }
+      if (error.message === ERROR_MESSAGES.PAYMENT.PRODUCT_FETCH_ERROR) {
+        return res.status(HTTP_STATUS.NOT_FOUND).json({ 
+          message: ERROR_MESSAGES.GENERAL.RESOURCE_NOT_FOUND,
+          details: `Product with ID ${product_id} not found in catalog service`
+        } as ErrorResponse);
+      }
+
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ 
+        message: ERROR_MESSAGES.PAYMENT.PROCESS_ERROR 
+      } as ErrorResponse);
     }
   }
 

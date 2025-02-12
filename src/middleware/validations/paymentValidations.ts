@@ -6,7 +6,7 @@ export const validatePayment = (req: Request, res: Response, next: NextFunction)
 
   console.log('Validando pago:', { product_id, quantity, payment_method, price });
 
-  if (product_id === undefined || quantity === undefined || payment_method === undefined || price === undefined) {
+  if (!product_id || !quantity || !payment_method || price === undefined) {
     console.error(ERROR_MESSAGES.VALIDATION.REQUIRED_FIELDS);
     return res.status(400).json({ message: ERROR_MESSAGES.VALIDATION.REQUIRED_FIELDS });
   }
@@ -16,7 +16,7 @@ export const validatePayment = (req: Request, res: Response, next: NextFunction)
     return res.status(400).json({ message: ERROR_MESSAGES.VALIDATION.INVALID_PRODUCT_ID });
   }
 
-  if (isNaN(Number(quantity)) || Number(quantity) <= 0) {
+  if (quantity <= 0) {
     console.error(ERROR_MESSAGES.VALIDATION.INVALID_QUANTITY);
     return res.status(400).json({ message: ERROR_MESSAGES.VALIDATION.INVALID_QUANTITY });
   }

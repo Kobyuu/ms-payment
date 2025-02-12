@@ -34,10 +34,7 @@ class PaymentController {
 
     console.log('Procesando pago:', { product_id, quantity, payment_method });
 
-    if (!product_id || quantity <= 0 || !payment_method) {
-      console.error(ERROR_MESSAGES.VALIDATION.REQUIRED_FIELDS);
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: ERROR_MESSAGES.VALIDATION.REQUIRED_FIELDS } as ErrorResponse);
-    }
+
 
     try {
       const newPayment = await PaymentService.processPayment(product_id, quantity, payment_method);

@@ -27,28 +27,39 @@ class PaymentService {
   static async processPayment(product_id: number, quantity: number, payment_method: string): Promise<Payment> {
     const transaction = await sequelize.transaction();
     try {
+      // Validate quantity first
+      if (!quantity || isNaN(quantity) || quantity <= 0) {
+        await transaction.rollback();
+        throw new Error(ERROR_MESSAGES.VALIDATION.INVALID_QUANTITY);
+      }
+
       const productResponse = await ProductService.getProductById(product_id);
+      
       if (!productResponse.data) {
         throw new Error(ERROR_MESSAGES.PAYMENT.PRODUCT_FETCH_ERROR);
       }
 
-      const price = productResponse.data.price;
-      const total = calculateTotalPrice(price, quantity);
+      const price = productResponse.data.data.price;
 
-      const newPayment = await Payments.create(
-        {
-          product_id,
-          price: total,
-          payment_method,
-        },
-        { transaction }
-      );
+      // Validación de precio
+      if (!price || isNaN(price) || price <= 0) {
+        await transaction.rollback();
+        throw new Error(ERROR_MESSAGES.PAYMENT.INVALID_PRICE);
+      }
+
+      const total = calculateTotalPrice(price, quantity);
+      
+      const newPayment = await Payments.create({
+        product_id,
+        price: total,
+        payment_method
+      }, { transaction });
 
       await transaction.commit();
       return newPayment;
     } catch (error) {
       await transaction.rollback();
-      console.error(ERROR_MESSAGES.PAYMENT.PROCESS_ERROR, error);
+      console.error('Payment processing error:', error);
       throw new Error(ERROR_MESSAGES.PAYMENT.PROCESS_ERROR);
     }
   }

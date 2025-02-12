@@ -14,6 +14,7 @@ class Payments extends Model {
   @Column({
     type: DataType.FLOAT,
     allowNull: false,
+    defaultValue: 0
   })
   declare price: number;
 
@@ -23,5 +24,4 @@ class Payments extends Model {
   })
   declare payment_method: string;
 }
-
 export default Payments;

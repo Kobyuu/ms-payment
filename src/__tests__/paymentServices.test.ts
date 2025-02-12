@@ -7,7 +7,6 @@ import Payments from '../models/Payment.model';
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../config/constants';
 import { calculateTotalPrice } from '../utils/utils';
 import redisClient from '../config/redisClient';
-import { breakers } from '../middleware/circuitBreaker';
 
 // Mock Sequelize
 jest.mock('sequelize-typescript', () => {
@@ -31,22 +30,6 @@ jest.mock('../models/Payment.model', () => ({
   create: jest.fn(),
 }));
 jest.mock('../utils/utils');
-jest.mock('../middleware/circuitBreaker', () => ({
-  breakers: {
-    getAllPayments: {
-      fire: jest.fn((callback) => Promise.resolve(callback())),
-    },
-    getPaymentById: {
-      fire: jest.fn((callback) => Promise.resolve(callback())),
-    },
-    processPayment: {
-      fire: jest.fn((callback) => Promise.resolve(callback())),
-    },
-    compensatePayment: {
-      fire: jest.fn((callback) => Promise.resolve(callback())),
-    },
-  },
-}));
 
 describe('PaymentService', () => {
   beforeEach(() => {
@@ -65,7 +48,6 @@ describe('PaymentService', () => {
       const result = await PaymentService.getPayments();
 
       expect(result).toEqual(mockPayments);
-      expect(breakers.getAllPayments.fire).toHaveBeenCalled();
     });
 
     it('should throw an error if fetching payments fails', async () => {
@@ -75,5 +57,4 @@ describe('PaymentService', () => {
     });
   });
 
-  // Otros tests...
 });

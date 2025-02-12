@@ -29,11 +29,6 @@ export const ERROR_MESSAGES = {
     TOO_MANY_REQUESTS: 'Demasiadas solicitudes desde esta IP, por favor intente nuevamente más tarde.',
   },
 };
-export const CIRCUIT_BREAKER_MESSAGES = {
-  OPEN: 'Circuito abierto',
-  HALF_OPEN: 'Circuito medio abierto',
-  CLOSED: 'Circuito cerrado'
-};
 
 export const SUCCESS_MESSAGES = {
   PAYMENT: {

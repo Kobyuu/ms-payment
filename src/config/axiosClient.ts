@@ -4,7 +4,6 @@ import { CONFIG } from './constants/';
 import { ERROR_MESSAGES, DYNAMIC_MESSAGES } from './constants';
 import { cacheService } from '../services/redisCacheService';
 
-
 const axiosClient = axios.create({
   baseURL: CONFIG.PRODUCT_SERVICE_URL,
   timeout: 5000,
@@ -51,9 +50,6 @@ axiosClient.interceptors.response.use(async (response) => {
     await cacheService.setToCache(cacheKey, response.data);
   }
   return response;
-}, (error) => {
-  console.error(ERROR_MESSAGES.GENERAL.HTTP_REQUEST, error);
-  return Promise.reject(error);
 });
 
 export default axiosClient;

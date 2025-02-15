@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1234
-      POSTGRES_DB: postgres
+      POSTGRES_DB: ms-payment
     container_name: ms-payment_postgres
     ports:
       - "8432:5432"
@@ -81,6 +81,18 @@ services:
       redis:
         condition: service_started
 
+  # K6
+  k6:
+    image: loadimpact/k6
+    container_name: ms-payment_k6
+    profiles: ["k6"]
+    volumes:
+      - ./k6:/k6
+    entrypoint: ["k6", "run", "/k6/load-test.js"]
+    depends_on:
+      - app
+    networks:
+      - microservicios-red
 volumes:
   postgres_data_payment:
 networks:

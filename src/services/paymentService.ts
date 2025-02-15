@@ -1,6 +1,6 @@
 import sequelize from '../config/db';
 import Payments from '../models/Payment.model';
-import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../config/constants';
+import { ERROR_MESSAGES, SUCCESS_MESSAGES, HTTP_STATUS } from '../config/constants';
 import { Payment } from '../types/types';
 import { calculateTotalPrice } from '../utils/utils';
 import ProductService from './productService';
@@ -35,11 +35,13 @@ class PaymentService {
 
       const productResponse = await ProductService.getProductById(product_id);
       
-      if (!productResponse.data) {
-        throw new Error(ERROR_MESSAGES.PAYMENT.PRODUCT_FETCH_ERROR);
+      // Check if we got a successful response
+      if (productResponse.statusCode !== HTTP_STATUS.OK || !productResponse.data) {
+        await transaction.rollback();
+        throw new Error(ERROR_MESSAGES.PAYMENT.PRODUCT_NOT_FOUND);
       }
 
-      const price = productResponse.data.data.price;
+      const price = productResponse.data.price;
 
       // Validación de precio
       if (typeof price !== 'number' || isNaN(price) || price <= 0) {

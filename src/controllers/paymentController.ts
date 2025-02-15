@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import PaymentService from '../services/paymentService';
 import { ErrorResponse, SuccessResponse } from '../types/types';
-import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../config/constants/messages';
+import { ERROR_MESSAGES, SUCCESS_MESSAGES, PAYMENT_METHODS } from '../config/constants';
 import { HTTP_STATUS } from '../config/constants/httpStatus';
 
 class PaymentController {
@@ -49,8 +49,7 @@ class PaymentController {
     }
 
     // Validate payment_method
-    const validPaymentMethods = ['tarjeta', 'paypal', 'transferencia bancaria'];
-    if (!payment_method || !validPaymentMethods.includes(payment_method)) {
+    if (!payment_method || !PAYMENT_METHODS.VALID_METHODS.includes(payment_method)) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({ 
         message: ERROR_MESSAGES.VALIDATION.INVALID_PAYMENT_METHOD 
       } as ErrorResponse);
@@ -64,10 +63,9 @@ class PaymentController {
       );
       return res.status(HTTP_STATUS.CREATED).json(newPayment);
     } catch (error: any) {
-      // Log the actual error for debugging
       console.error('Payment processing error:', error);
       
-      // Return specific error messages
+      // Handle specific errors
       if (error.message === ERROR_MESSAGES.VALIDATION.INVALID_QUANTITY) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json({ 
           message: ERROR_MESSAGES.VALIDATION.INVALID_QUANTITY 
@@ -78,10 +76,10 @@ class PaymentController {
           message: ERROR_MESSAGES.PAYMENT.INVALID_PRICE 
         } as ErrorResponse);
       }
-      if (error.message === ERROR_MESSAGES.PAYMENT.PRODUCT_FETCH_ERROR) {
+      if (error.message === ERROR_MESSAGES.PAYMENT.PRODUCT_NOT_FOUND) {
         return res.status(HTTP_STATUS.NOT_FOUND).json({ 
-          message: ERROR_MESSAGES.GENERAL.RESOURCE_NOT_FOUND,
-          details: `Product with ID ${product_id} not found in catalog service`
+          message: ERROR_MESSAGES.PAYMENT.PRODUCT_NOT_FOUND,
+          details: `Product with ID ${product_id} not found`
         } as ErrorResponse);
       }
 

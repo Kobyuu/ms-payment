@@ -1,4 +1,5 @@
 import { Table, Column, Model, DataType } from 'sequelize-typescript';
+import { PAYMENT_METHODS } from '../config/constants';
 
 @Table({
   tableName: 'payments',
@@ -14,13 +15,15 @@ class Payments extends Model {
   @Column({
     type: DataType.FLOAT,
     allowNull: false,
-    defaultValue: 0
   })
   declare price: number;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
+    validate: {
+      isIn: [PAYMENT_METHODS.VALID_METHODS]
+    }
   })
   declare payment_method: string;
 }

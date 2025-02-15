@@ -3,8 +3,9 @@ export const ERROR_MESSAGES = {
     REQUIRED_FIELDS: 'El ID del producto, la cantidad, el precio y el método de pago son obligatorios.',
     INVALID_PRODUCT_ID: 'El ID del producto debe ser un número válido y mayor que 0.',
     INVALID_QUANTITY: 'La cantidad debe ser un número válido y mayor que 0',
-    INVALID_PAYMENT_METHOD: 'El método de pago no es válido.',
+    INVALID_PAYMENT_METHOD: 'El método de pago no es válido. Debe ser "tarjeta", "paypal" ó "transferencia bancaria"',
     INVALID_PRICE: 'El precio debe ser un número válido y no puede ser negativo.',
+    INVALID_DATA: 'Datos inválidos',
   },
   PAYMENT: {
     NOT_FOUND: 'Pago no encontrado',
@@ -16,16 +17,20 @@ export const ERROR_MESSAGES = {
     VALIDATION_ERROR: 'Error de validación en el controlador: Campos obligatorios faltantes',
     INVALID_PRICE: 'El precio del producto no es válido o es menor o igual a cero',
     GET_PAYMENTS_ERROR: 'Error en PaymentService.getPayments:',
+    PRODUCT_NOT_FOUND: 'Producto no encontrado',
   },
   GENERAL: {
     DB_CONNECTION_ERROR: 'No se pudo conectar a la base de datos:',
+    DB_URL_NOT_DEFINED: 'La URL de la base de datos no está definida',
     ENV_VAR_NOT_DEFINED: 'Variable de entorno no definida',
     SERVICE_UNAVAILABLE: 'Servicio no disponible temporalmente',
     RESOURCE_NOT_FOUND: 'El recurso solicitado no existe',
     HTTP_REQUEST: 'Error en la solicitud HTTP',
+    RATE_LIMIT_EXCEEDED: 'Demasiadas solicitudes desde esta IP, por favor intente de nuevo más tarde.'
   },
   REDIS: {
     CONNECTION_ERROR: 'Error al conectar con Redis:',
+    URL_PARSE: 'Error parsing Redis URL:',
   },
   RATE_LIMITER: {
     TOO_MANY_REQUESTS: 'Demasiadas solicitudes desde esta IP, por favor intente nuevamente más tarde.',
@@ -38,6 +43,7 @@ export const SUCCESS_MESSAGES = {
   },
   GENERAL: {
     DB_CONNECTION_SUCCESS: 'Conexión a la base de datos establecida exitosamente.',
+    OK: 'OK',
   },
   REDIS: {
     CONNECTION_SUCCESS: 'Conexión a Redis establecida exitosamente.',

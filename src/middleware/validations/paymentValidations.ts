@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { ERROR_MESSAGES } from '../../config/constants/messages';
+import { ERROR_MESSAGES, PAYMENT_METHODS } from '../../config/constants';
 
 export const validatePayment = (req: Request, res: Response, next: NextFunction) => {
   const { product_id, quantity, payment_method } = req.body;
@@ -28,8 +28,7 @@ export const validatePayment = (req: Request, res: Response, next: NextFunction)
   }
 
   // Payment method validation
-  const validPaymentMethods = ['tarjeta', 'paypal', 'transferencia bancaria'];
-  if (!validPaymentMethods.includes(payment_method)) {
+  if (!PAYMENT_METHODS.VALID_METHODS.includes(payment_method)) {
     return res.status(400).json({ 
       message: ERROR_MESSAGES.VALIDATION.INVALID_PAYMENT_METHOD 
     });

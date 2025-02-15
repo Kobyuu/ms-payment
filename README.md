@@ -21,19 +21,33 @@ Este es un microservicio de pagos desarrollado con **Node.js, Express y TypeScri
 
 1. Crea un archivo `.env` en la raíz del proyecto con el siguiente contenido:
    ```env
-   # Configuración de la base de datos
-   DATABASE_URL=postgres://postgres:banana@localhost:5432/ms-payment
-   
-   # URLs de otros microservicios
-   INVENTORY_SERVICE_URL=http://localhost:4002/api/inventory
-   PRODUCT_SERVICE_URL=http://localhost:4001/api/products
-   
-   # Configuraciones adicionales
-   RETRY_COUNT=3
-   RETRY_DELAY=1000
-   OUTPUT_STOCK=2
-   CACHE_EXPIRY=3600
-   PORT=4003
+   # Retry configuration
+   RETRY_COUNT=3                    # Number of retry attempts for failed operations
+   RETRY_DELAY=1000                # Delay between retries in milliseconds
+
+   # Stock configuration
+   OUTPUT_STOCK=2                   # Default output stock quantity
+
+   # Redis configuration
+   REDIS_HOST='redis'              # Redis server hostname
+   REDIS_PORT=6379                 # Redis server port
+   REDIS_URL='redis://redis:6379'  # Complete Redis connection URL
+   REDIS_RETRY_DELAY=2000          # Redis reconnection delay in milliseconds
+
+   # Server configuration
+   PORT=4003                       # Application server port
+   CACHE_EXPIRY=3600              # Cache expiration time in seconds
+
+   # Database configuration
+   DATABASE_URL='postgres://postgres:1234@postgres:5432/ms-payment'  # PostgreSQL connection URL
+   DATABASE_POOL_MAX_CONNECTIONS=5     # Maximum number of connections in the pool
+   DATABASE_POOL_MIN_CONNECTIONS=1     # Minimum number of connections in the pool
+   DATABASE_POOL_IDLE_TIME=600000     # Maximum time (ms) that a connection can be idle
+   DATABASE_POOL_ACQUIRE_TIMEOUT=30000 # Maximum time (ms) to acquire a connection
+
+   # External services configuration
+   PRODUCT_SERVICE_URL='http://ms-catalog_app:4001/api/product'  # Product service endpoint
+   PRODUCT_SERVICE_TIMEOUT=5000    # Timeout for product service requests in milliseconds
    ```
 
 ## Uso sin Docker

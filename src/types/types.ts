@@ -29,3 +29,26 @@ export interface CacheService {
 export interface DatabaseService {
   transaction<T>(): Promise<T>;
 }
+
+// Product interfaces
+export interface IProduct {
+  productId: number; 
+  name: string;
+  price: number;
+  activate: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface IProductResponse {
+  data: IProduct;
+  message?: string;
+  error?: string;
+  statusCode: number;
+}
+
+// RedisConfig interface
+export interface RedisConfig {
+  host: string;
+  port: number;
+}

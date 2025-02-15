@@ -1,6 +1,6 @@
 import express from 'express';
 import router from './router';
-import { rateLimiter } from './middleware/rateLimiter';
+import limiter from './middleware/rateLimiter';
 
 const server = express();
 
@@ -11,7 +11,7 @@ server.use(express.json());
 server.use(express.urlencoded({ extended: true }));
 
 // Middleware de limitación de tasa
-server.use(rateLimiter);
+server.use(limiter);
 
 // Rutas del API de pagos
 server.use('/api/payment', router);

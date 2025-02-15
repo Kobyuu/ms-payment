@@ -9,5 +9,10 @@ export const DEFAULTS = {
   CACHE_EXPIRY: 3600,
   DATABASE_URL: 'postgres://postgres:1234@postgres:5432/ms-payment',
   PRODUCT_SERVICE_URL: 'http://ms-catalog_app:4001/api/product',
-  REDIS_URL: 'redis://redis:6379'
+  REDIS_URL: 'redis://redis:6379',
+  PRODUCT_SERVICE_TIMEOUT: 5000,
+  DATABASE_POOL_MAX_CONNECTIONS: 5,
+  DATABASE_POOL_MIN_CONNECTIONS: 1,
+  DATABASE_POOL_IDLE_TIME: 600000,
+  DATABASE_POOL_ACQUIRE_TIMEOUT: 30000,
 };

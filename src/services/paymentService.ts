@@ -42,8 +42,8 @@ class PaymentService {
       }
 
       const price = productResponse.data.price;
-
-      // Validación de precio
+      
+      // Validate price
       if (typeof price !== 'number' || isNaN(price) || price <= 0) {
         await transaction.rollback();
         throw new Error(ERROR_MESSAGES.PAYMENT.INVALID_PRICE);
@@ -62,6 +62,10 @@ class PaymentService {
     } catch (error) {
       await transaction.rollback();
       console.error('Payment processing error:', error);
+      // Propagar el error original en lugar de crear uno nuevo
+      if (error instanceof Error) {
+        throw error;
+      }
       throw new Error(ERROR_MESSAGES.PAYMENT.PROCESS_ERROR);
     }
   }
@@ -69,8 +73,7 @@ class PaymentService {
   static async compensatePayment(paymentId: number): Promise<string> {
     const transaction = await sequelize.transaction();
     try {
-      const payment = await Payments.findByPk(paymentId, { transaction });
-
+      const payment = await Payments.findByPk(paymentId);
       if (!payment) {
         await transaction.rollback();
         throw new Error(ERROR_MESSAGES.PAYMENT.NOT_FOUND);
@@ -82,6 +85,10 @@ class PaymentService {
     } catch (error) {
       await transaction.rollback();
       console.error(ERROR_MESSAGES.PAYMENT.REVERT_ERROR, error);
+      // Propagar el error original
+      if (error instanceof Error) {
+        throw error;
+      }
       throw new Error(ERROR_MESSAGES.PAYMENT.REVERT_ERROR);
     }
   }

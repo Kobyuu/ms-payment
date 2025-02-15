@@ -1,35 +1,29 @@
-import dotenv from 'dotenv';
-dotenv.config();
-
-import { Sequelize } from 'sequelize-typescript';
 import PaymentService from '../services/paymentService';
 import Payments from '../models/Payment.model';
-import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../config/constants';
-import { calculateTotalPrice } from '../utils/utils';
+import { ERROR_MESSAGES } from '../config/constants';
 import redisClient from '../config/redisClient';
 
 // Mock Sequelize
-jest.mock('sequelize-typescript', () => {
-  const actualSequelize = jest.requireActual('sequelize-typescript');
+jest.mock('../config/db', () => {
+  const mockTransaction = {
+    commit: jest.fn().mockResolvedValue(undefined),
+    rollback: jest.fn().mockResolvedValue(undefined),
+  };
+  
   return {
-    ...actualSequelize,
-    Sequelize: jest.fn(() => ({
+    __esModule: true,
+    default: {
+      transaction: jest.fn().mockResolvedValue(mockTransaction),
+      addHook: jest.fn(),
       authenticate: jest.fn(),
-      transaction: jest.fn(() => ({
-        commit: jest.fn(),
-        rollback: jest.fn(),
-      })),
-    })),
+    },
   };
 });
 
 // Mocks
-jest.mock('../models/Payment.model', () => ({
-  findAll: jest.fn(),
-  findByPk: jest.fn(),
-  create: jest.fn(),
-}));
+jest.mock('../models/Payment.model');
 jest.mock('../utils/utils');
+jest.mock('../services/productService');
 
 describe('PaymentService', () => {
   beforeEach(() => {
@@ -46,15 +40,14 @@ describe('PaymentService', () => {
       (Payments.findAll as jest.Mock).mockResolvedValue(mockPayments);
 
       const result = await PaymentService.getPayments();
-
       expect(result).toEqual(mockPayments);
     });
 
     it('should throw an error if fetching payments fails', async () => {
       (Payments.findAll as jest.Mock).mockRejectedValue(new Error(ERROR_MESSAGES.PAYMENT.GET_PAYMENTS_ERROR));
-
       await expect(PaymentService.getPayments()).rejects.toThrow(ERROR_MESSAGES.PAYMENT.GET_PAYMENTS_ERROR);
     });
   });
 
+  // Add more test cases for other methods
 });

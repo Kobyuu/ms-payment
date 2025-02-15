@@ -2,24 +2,34 @@ import request from 'supertest';
 import server from '../server';
 import PaymentService from '../services/paymentService';
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../config/constants';
-import sequelize from '../config/db';
 import redisClient from '../config/redisClient';
 
-beforeAll(async () => {
-  await sequelize.authenticate();
-  console.log('Conexión a la base de datos establecida exitosamente.');
-});
+// Mock the database connection
+jest.mock('../config/db', () => ({
+  authenticate: jest.fn().mockResolvedValue(null),
+  close: jest.fn().mockResolvedValue(null),
+  transaction: jest.fn(),
+  __esModule: true,
+  default: {
+    authenticate: jest.fn().mockResolvedValue(null),
+    close: jest.fn().mockResolvedValue(null),
+  }
+}));
 
-afterAll(async () => {
-  await sequelize.close();
-  await redisClient.quit();
-  console.log('Conexión a la base de datos y Redis cerrada exitosamente.');
-});
-
-// Mock de PaymentService
+// Mock PaymentService
 jest.mock('../services/paymentService');
 
 describe('PaymentController', () => {
+  beforeAll(() => {
+    // No need to actually connect to DB
+    console.log('Mocks initialized');
+  });
+
+  afterAll(async () => {
+    await redisClient.quit();
+    console.log('Redis connection closed');
+  });
+
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -107,6 +117,57 @@ describe('PaymentController', () => {
       expect(response.status).toBe(400);
       expect(response.body.message).toBe(ERROR_MESSAGES.VALIDATION.REQUIRED_FIELDS);
     });
+
+    it('debería devolver 400 si el ID del producto es inválido', async () => {
+      const response = await request(server)
+        .post('/api/payment')
+        .send({ product_id: -1, quantity: 2, payment_method: 'tarjeta' });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(ERROR_MESSAGES.VALIDATION.INVALID_PRODUCT_ID);
+    });
+
+    it('debería devolver 400 si la cantidad es inválida', async () => {
+      const response = await request(server)
+        .post('/api/payment')
+        .send({ product_id: 1, quantity: -1, payment_method: 'tarjeta' });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(ERROR_MESSAGES.VALIDATION.INVALID_QUANTITY);
+    });
+
+    it('debería devolver 400 si el método de pago es inválido', async () => {
+      const response = await request(server)
+        .post('/api/payment')
+        .send({ product_id: 1, quantity: 2, payment_method: 'invalid' });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(ERROR_MESSAGES.VALIDATION.INVALID_PAYMENT_METHOD);
+    });
+
+    it('debería devolver 404 si el producto no existe', async () => {
+      (PaymentService.processPayment as jest.Mock)
+        .mockRejectedValue(new Error(ERROR_MESSAGES.PAYMENT.PRODUCT_NOT_FOUND));
+
+      const response = await request(server)
+        .post('/api/payment')
+        .send({ product_id: 999, quantity: 2, payment_method: 'tarjeta' });
+
+      expect(response.status).toBe(404);
+      expect(response.body.message).toBe(ERROR_MESSAGES.PAYMENT.PRODUCT_NOT_FOUND);
+    });
+
+    it('debería devolver 400 si el precio es inválido', async () => {
+      (PaymentService.processPayment as jest.Mock)
+        .mockRejectedValue(new Error(ERROR_MESSAGES.PAYMENT.INVALID_PRICE));
+
+      const response = await request(server)
+        .post('/api/payment')
+        .send({ product_id: 1, quantity: 2, payment_method: 'tarjeta' });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(ERROR_MESSAGES.PAYMENT.INVALID_PRICE);
+    });
   });
 
   describe('DELETE /api/payment/:paymentId', () => {
@@ -126,6 +187,16 @@ describe('PaymentController', () => {
 
       expect(response.status).toBe(500);
       expect(response.body.message).toBe(ERROR_MESSAGES.PAYMENT.REVERT_ERROR);
+    });
+
+    it('debería devolver 404 si el pago a revertir no existe', async () => {
+      (PaymentService.compensatePayment as jest.Mock)
+        .mockRejectedValue(new Error(ERROR_MESSAGES.PAYMENT.NOT_FOUND));
+
+      const response = await request(server).delete('/api/payment/999');
+
+      expect(response.status).toBe(404);
+      expect(response.body.message).toBe(ERROR_MESSAGES.PAYMENT.NOT_FOUND);
     });
   });
 });

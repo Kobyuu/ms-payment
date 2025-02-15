@@ -93,6 +93,7 @@ Las pruebas se encuentran en la carpeta `src/__tests__`.
 Los mensajes de error están centralizados en la carpeta `config/constants/messages.ts`.
 
 ## jest.config.js
+```js
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
@@ -108,7 +109,10 @@ module.exports = {
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov'],
 };
+```
 
 ## jest.setup.js
+```js
 // Configuración global para Jest
 jest.setTimeout(30000); // Establece un tiempo de espera global de 30 segundos para las pruebas
+```

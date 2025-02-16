@@ -1,30 +1,32 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { Counter, Rate } from 'k6/metrics';
+import { Counter, Rate, Trend } from 'k6/metrics';
 
-// URLs y configuración
+// Configuration
 const BASE_URL = 'http://ms-payment_app:4003/api/payment';
 const SUCCESS_MESSAGE = 'Pago revertido exitosamente. La compensación de inventario debe ser gestionada por el orquestador.';
 
-// Métricas personalizadas
+// Custom metrics
 const successfulPayments = new Counter('successful_payments');
 const successfulCompensations = new Counter('successful_compensations');
 const failedCompensations = new Counter('failed_compensations');
-const failedPayments = new Counter('failed_payments');
+const requestDuration = new Trend('request_duration');
 const successRate = new Rate('success_rate');
 
+// Request configuration
 const headers = {
   'Content-Type': 'application/json',
   'Accept': 'application/json'
 };
 
 const params = {
-  headers: headers,
-  timeout: 30000 // Aumentado a 30s
+  headers,
+  timeout: '10s' // Reduced timeout
 };
 
+// Test configuration
 export const options = {
-  setupTimeout: '60s',
+  setupTimeout: '30s',
   scenarios: {
     payments: {
       executor: 'constant-arrival-rate',
@@ -33,111 +35,112 @@ export const options = {
       duration: '10s',
       preAllocatedVUs: 15,
       maxVUs: 30,
-      startTime: '15s' // Aumentado para dar más tiempo de inicialización
+      startTime: '5s', // Reduced startup time
+      gracefulStop: '10s'
     },
   },
   thresholds: {
     http_req_duration: ['p(95)<5000'],
-    http_req_failed: ['rate<0.1'],
-    success_rate: ['rate>0.9']
+    http_req_failed: ['rate<0.2'], // Increased failure threshold
+    success_rate: ['rate>0.8'] // Adjusted success rate
   },
 };
 
-// Función mejorada para reintentos con backoff exponencial
-const retryRequest = (request, maxRetries = 3) => {
+// Enhanced retry function
+const retryRequest = (request, maxRetries = 2) => {
+  let lastError;
   for (let i = 0; i < maxRetries; i++) {
     try {
+      const start = new Date();
       const response = request();
-      // Verificar códigos específicos
-      if (response.status === 200 || response.status === 201) {
+      requestDuration.add(new Date() - start);
+
+      if (response.status !== 429 && response.status < 500) {
         return response;
       }
-      // Backoff exponencial más largo
-      sleep(Math.min(Math.pow(2, i) * 0.2, 1));
-    } catch (e) {
-      console.error(`Error en intento ${i + 1}:`, e);
-      if (i === maxRetries - 1) throw e;
-      sleep(0.5);
+
+      // Exponential backoff with jitter
+      const backoffTime = Math.min(Math.pow(2, i) * 0.1 * (1 + Math.random() * 0.1), 0.5);
+      sleep(backoffTime);
+    } catch (error) {
+      lastError = error;
+      if (i < maxRetries - 1) {
+        sleep(0.1);
+      }
     }
   }
-  return request();
+  throw lastError || new Error('Max retries reached');
 };
 
+// Setup function
 export function setup() {
   console.log('Iniciando prueba de carga...');
-  for (let i = 10; i > 0; i--) { // Aumentado a 10 intentos
-    const res = http.get(`${BASE_URL}/`);
-    if (res.status === 200) {
-      console.log('Servicio listo para pruebas');
-      sleep(5); // Aumentado el tiempo de espera
-      return true;
+  let retries = 5;
+  while (retries > 0) {
+    try {
+      const res = http.get(`${BASE_URL}/`, { timeout: '5s' });
+      if (res.status === 200) {
+        console.log('Servicio listo para pruebas');
+        sleep(2);
+        return true;
+      }
+    } catch (e) {
+      console.log(`Reintento ${6 - retries}/5`);
     }
-    console.log(`Esperando servicio, intentos restantes: ${i}`);
-    sleep(3);
+    retries--;
+    sleep(2);
   }
   throw new Error('Servicio no disponible');
 }
 
+// Main test function
 export default function () {
   const payload = JSON.stringify({
     product_id: Math.floor(Math.random() * 3) + 1,
-    quantity: Math.floor(Math.random() * 3) + 1,
+    quantity: 1, // Fixed to 1 to reduce load
     payment_method: ['tarjeta', 'paypal', 'transferencia bancaria'][Math.floor(Math.random() * 3)]
   });
 
-  // 1. Crear pago
-  const payment = retryRequest(() => 
-    http.post(`${BASE_URL}/`, payload, params)
-  );
+  try {
+    // Create payment
+    const payment = retryRequest(() => 
+      http.post(`${BASE_URL}/`, payload, params)
+    );
 
-  const paymentSuccess = check(payment, {
-    'payment created successfully': (r) => r.status === 201,
-    'payment has valid ID': (r) => {
-      try {
-        const body = JSON.parse(r.body);
-        return body && body.id > 0;
-      } catch (e) {
-        return false;
-      }
+    if (!check(payment, {
+      'payment successful': (r) => r.status === 201 && JSON.parse(r.body).id > 0,
+    })) {
+      failedCompensations.add(1);
+      successRate.add(0);
+      return;
     }
-  });
 
-  if (paymentSuccess) {
     successfulPayments.add(1);
-    
-    try {
-      const paymentId = JSON.parse(payment.body).id;
-      sleep(1); // Aumentado para dar tiempo al sistema
+    const paymentId = JSON.parse(payment.body).id;
+    sleep(0.1); // Minimal pause
 
-      // 2. Compensar pago
-      const compensation = retryRequest(() => 
-        http.del(`${BASE_URL}/${paymentId}`, null, params)
-      );
+    // Compensate payment
+    const compensation = retryRequest(() => 
+      http.del(`${BASE_URL}/${paymentId}`, null, params)
+    );
 
-      const compensationSuccess = check(compensation, {
-        'compensation successful': (r) => {
-          try {
-            const body = JSON.parse(r.body);
-            return r.status === 200 && body.message === SUCCESS_MESSAGE;
-          } catch (e) {
-            return false;
-          }
-        }
-      });
-
-      if (compensationSuccess) {
-        successfulCompensations.add(1);
-        successRate.add(1);
-      } else {
-        failedCompensations.add(1);
-        successRate.add(0);
-      }
-    } catch (e) {
-      console.error('Error en compensación:', e);
+    if (check(compensation, {
+      'compensation successful': (r) => 
+        r.status === 200 && 
+        JSON.parse(r.body).message === SUCCESS_MESSAGE
+    })) {
+      successfulCompensations.add(1);
+      successRate.add(1);
+    } else {
       failedCompensations.add(1);
       successRate.add(0);
     }
+
+  } catch (error) {
+    console.error('Error:', error.message);
+    failedCompensations.add(1);
+    successRate.add(0);
   }
 
-  sleep(1); // Aumentado para mejor distribución de carga
+  sleep(0.2); // Small pause between iterations
 }

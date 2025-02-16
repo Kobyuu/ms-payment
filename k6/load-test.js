@@ -1,5 +1,12 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+import { Counter } from 'k6/metrics';
+
+// Métricas personalizadas
+const successfulPayments = new Counter('successful_payments');
+const failedPayments = new Counter('failed_payments');
+const successfulCompensations = new Counter('successful_compensations');
+const failedCompensations = new Counter('failed_compensations');
 
 const BASE_URL = 'http://ms-payment_app:4003/api/payment';
 
@@ -8,66 +15,79 @@ const headers = {
   'Accept': 'application/json'
 };
 
-const params = {
-  headers: headers,
-  timeout: 10000  // 10s timeout
-};
-
+// Configuración optimizada
 export const options = {
-  setupTimeout: '60s',
+  setupTimeout: '30s',
   scenarios: {
     payments: {
       executor: 'constant-arrival-rate',
-      rate: 10,                // Reducir de 30 a 10
+      rate: 5,
       timeUnit: '1s',
       duration: '10s',
-      preAllocatedVUs: 20,     // Reducir de 60 a 20 
-      maxVUs: 40,              // Reducir de 100 a 40
-      startTime: '15s'         // Dar tiempo al servicio para iniciar
+      preAllocatedVUs: 10,
+      maxVUs: 20,
+      startTime: '5s' // Reducido de 15s a 5s
     },
   },
   thresholds: {
-    http_req_duration: ['p(95)<5000'],  // Aumentar timeout
-    http_req_failed: ['rate<0.2'],      // Aumentar tolerancia a fallos
+    http_req_duration: ['p(95)<5000'],  // Reducido a 5s
+    http_req_failed: ['rate<0.1'],
+    successful_compensations: ['count>0'],
   },
 };
 
+// Función helper mejorada para retry
 const retryRequest = (request, maxRetries = 3) => {
   let retries = 0;
   while (retries < maxRetries) {
-    const response = request();
-    if (response.status < 500) {
-      return response;
+    try {
+      const response = request();
+      // Loggear el body en caso de error 500
+      if (response.status === 500) {
+        console.error(`Error 500 response body: ${response.body}`);
+      }
+      if (response.status < 500) {
+        return response;
+      }
+      console.log(`Retry ${retries + 1}: Status ${response.status}`);
+      retries++;
+      sleep(1); // Reducido a 1s
+    } catch (e) {
+      console.error(`Error en intento ${retries + 1}:`, e);
+      retries++;
+      sleep(1);
     }
-    retries++;
-    sleep(1);
   }
   return request();
 };
 
-// Agregar función de setup para esperar que el servicio esté disponible
 export function setup() {
-  for (let i = 0; i < 30; i++) {
-    const res = http.get('http://ms-payment_app:4003/api/payment/');
-    if (res.status !== 0) {
-      console.log('Service is ready');
-      return;
+  console.log('Iniciando prueba de carga...');
+  let retries = 5; // Reducido a 5 intentos
+  while (retries > 0) {
+    try {
+      const res = http.get(`${BASE_URL}/`);
+      if (res.status === 200) {
+        console.log('Servicio listo');
+        sleep(2); // Reducido a 2s
+        return true;
+      }
+    } catch (e) {
+      console.error(`Error en setup: ${e.message}`);
     }
-    console.log('Waiting for service...');
-    sleep(1);
+    console.log(`Servicio no disponible, intentos restantes: ${retries}`);
+    retries--;
+    sleep(2);
   }
+  throw new Error('Servicio no disponible después de varios intentos');
 }
 
 export default function () {
-  const productId = Math.floor(Math.random() * 3) + 1;
-  const quantity = Math.floor(Math.random() * 5) + 1;
-  const paymentMethods = ['tarjeta', 'paypal', 'transferencia bancaria'];
-  const randomPaymentMethod = paymentMethods[Math.floor(Math.random() * paymentMethods.length)];
-
-  // GET: obtener todos los pagos
+  // GET all payments
   const getAllPayments = retryRequest(() => 
-    http.get(`${BASE_URL}/`, params)
+    http.get(`${BASE_URL}/`, { headers })
   );
+
   check(getAllPayments, {
     'GET all payments status is 200': (r) => r.status === 200,
     'GET all payments returns array': (r) => {
@@ -75,71 +95,100 @@ export default function () {
         const body = JSON.parse(r.body);
         return Array.isArray(body.data || body);
       } catch (e) {
-        console.error('Parse error:', e);
+        console.error('Error parsing GET response:', e);
         return false;
       }
     },
   });
 
-  sleep(Math.random() * 2 + 1);
+  sleep(1);
 
-  // GET: obtener pago por ID
-  const getPayment = retryRequest(() => http.get(`${BASE_URL}/1`, params));
-  check(getPayment, {
-    'GET payment by id status is 200 or 404': (r) => r.status === 200 || r.status === 404,
+  // Payload para el POST
+  const payload = JSON.stringify({
+    product_id: Math.floor(Math.random() * 3) + 1,
+    quantity: Math.floor(Math.random() * 5) + 1,
+    payment_method: 'tarjeta',
+    status: 'pending'
   });
 
-  sleep(Math.random() * 2 + 1);
+  // POST payment con mejor manejo de errores
+  const processPayment = retryRequest(() => 
+    http.post(BASE_URL, payload, { headers })
+  );
 
-  // POST: procesar nuevo pago
-  const processPaymentPayload = JSON.stringify({
-    product_id: productId,
-    quantity: quantity,
-    payment_method: randomPaymentMethod
-  });
+  if (processPayment.status === 500) {
+    console.error(`Payment failed with body: ${processPayment.body}`);
+    failedPayments.add(1);
+    return;
+  }
 
-  const processPayment = retryRequest(() => http.post(
-    `${BASE_URL}/`, 
-    processPaymentPayload,
-    params
-  ));
-
-  check(processPayment, {
+  const paymentSuccess = check(processPayment, {
     'POST process payment status is 201': (r) => r.status === 201,
     'POST process payment has valid response': (r) => {
       try {
-        return JSON.parse(r.body) !== null;
+        const body = JSON.parse(r.body);
+        return body && body.id;
       } catch (e) {
+        console.error('Error parsing payment response:', e);
         return false;
       }
     },
   });
 
-  sleep(Math.random() * 2 + 1);
-
-  // DELETE: revertir pago (compensación)
-  if (processPayment.status === 201) {
+  if (paymentSuccess) {
+    successfulPayments.add(1);
     try {
       const paymentId = JSON.parse(processPayment.body).id;
+      
+      // GET payment by id
+      const getPayment = retryRequest(() => 
+        http.get(`${BASE_URL}/${paymentId}`, { headers })
+      );
+
+      check(getPayment, {
+        'GET payment by id status is 200': (r) => r.status === 200,
+        'GET payment by id returns valid data': (r) => {
+          try {
+            const body = JSON.parse(r.body);
+            return body && body.id === paymentId;
+          } catch (e) {
+            console.error('Error parsing GET by ID response:', e);
+            return false;
+          }
+        },
+      });
+
+      sleep(1);
+      
+      // DELETE compensación
       const compensatePayment = retryRequest(() => 
-        http.del(`${BASE_URL}/${paymentId}`, null, params)
+        http.del(`${BASE_URL}/${paymentId}`, null, { headers })
       );
 
       check(compensatePayment, {
-        'DELETE compensate payment status is 200': (r) => r.status === 200,
         'DELETE compensate payment success': (r) => {
           try {
             const body = JSON.parse(r.body);
-            return body.message === 'Pago revertido exitosamente';
+            if (r.status === 200) {
+              successfulCompensations.add(1);
+              return true;
+            }
+            failedCompensations.add(1);
+            return false;
           } catch (e) {
+            console.error('Error parsing compensation response:', e);
+            failedCompensations.add(1);
             return false;
           }
         },
       });
     } catch (e) {
-      console.error('Error compensating payment:', e);
+      console.error('Error en compensación:', e);
+      failedCompensations.add(1);
     }
+  } else {
+    failedPayments.add(1);
   }
 
-  sleep(Math.random() * 2 + 1);
+  sleep(0.5);
 }

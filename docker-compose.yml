@@ -78,6 +78,12 @@ services:
     depends_on:
       - postgres
       - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4003/api/payment"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
 
   # K6
   k6:
@@ -88,7 +94,10 @@ services:
       - ./k6:/k6
     entrypoint: ["k6", "run", "/k6/load-test.js"]
     depends_on:
-      - app
+      app:
+        condition: service_healthy
+    environment:
+      - K6_TIMEOUT=30s
     networks:
       - microservicios-red
 volumes:

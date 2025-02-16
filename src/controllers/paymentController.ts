@@ -1,17 +1,28 @@
 import { Request, Response } from 'express';
 import PaymentService from '../services/paymentService';
 import { ErrorResponse, SuccessResponse } from '../types/types';
+import Payments from '../models/Payment.model';
 import { ERROR_MESSAGES, SUCCESS_MESSAGES, PAYMENT_METHODS } from '../config/constants';
 import { HTTP_STATUS } from '../config/constants/httpStatus';
 
 class PaymentController {
   static async getPayments(req: Request, res: Response): Promise<Response> {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const offset = (page - 1) * limit;
+
     try {
-      const payments = await PaymentService.getPayments();
-      return res.status(HTTP_STATUS.OK).json({ data: payments } as SuccessResponse);
+      const payments = await Payments.findAll({
+        limit,
+        offset,
+        order: [['id', 'DESC']]
+      });
+      return res.status(HTTP_STATUS.OK).json({ data: payments });
     } catch (error) {
-      console.error(ERROR_MESSAGES.PAYMENT.PROCESS_ERROR, error);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: ERROR_MESSAGES.PAYMENT.PROCESS_ERROR, error } as ErrorResponse);
+      console.error(error);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        message: ERROR_MESSAGES.PAYMENT.GET_PAYMENTS_ERROR
+      });
     }
   }
 

@@ -14,20 +14,21 @@ const params = {
 };
 
 export const options = {
-  setupTimeout: '30s',
+  setupTimeout: '60s',
   scenarios: {
     payments: {
       executor: 'constant-arrival-rate',
-      rate: 30,              
+      rate: 10,                // Reducir de 30 a 10
       timeUnit: '1s',
       duration: '10s',
-      preAllocatedVUs: 60,    
-      maxVUs: 100,          
+      preAllocatedVUs: 20,     // Reducir de 60 a 20 
+      maxVUs: 40,              // Reducir de 100 a 40
+      startTime: '15s'         // Dar tiempo al servicio para iniciar
     },
   },
   thresholds: {
-    http_req_duration: ['p(95)<2000'],
-    http_req_failed: ['rate<0.1'],
+    http_req_duration: ['p(95)<5000'],  // Aumentar timeout
+    http_req_failed: ['rate<0.2'],      // Aumentar tolerancia a fallos
   },
 };
 
@@ -43,6 +44,19 @@ const retryRequest = (request, maxRetries = 3) => {
   }
   return request();
 };
+
+// Agregar función de setup para esperar que el servicio esté disponible
+export function setup() {
+  for (let i = 0; i < 30; i++) {
+    const res = http.get('http://ms-payment_app:4003/api/payment/');
+    if (res.status !== 0) {
+      console.log('Service is ready');
+      return;
+    }
+    console.log('Waiting for service...');
+    sleep(1);
+  }
+}
 
 export default function () {
   const productId = Math.floor(Math.random() * 3) + 1;

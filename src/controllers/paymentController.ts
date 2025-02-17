@@ -92,7 +92,7 @@ class PaymentController {
       if (error.message === ERROR_MESSAGES.PAYMENT.PRODUCT_NOT_FOUND) {
         return res.status(HTTP_STATUS.NOT_FOUND).json({ 
           message: ERROR_MESSAGES.PAYMENT.PRODUCT_NOT_FOUND,
-          details: `Product with ID ${product_id} not found`
+          details: DYNAMIC_MESSAGES.PRODUCT_NOT_FOUND(product_id)
         } as ErrorResponse);
       }
 

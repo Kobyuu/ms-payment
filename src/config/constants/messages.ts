@@ -56,4 +56,5 @@ export const DYNAMIC_MESSAGES = {
   SERVER_START: (port: number) => `REST API en el puerto ${port}`,
   PROCESSING_PAYMENT: (data: { product_id: number, quantity: number, payment_method: string }) => 
     `Procesando pago: ${JSON.stringify(data)}`,
+  PRODUCT_NOT_FOUND: (id: number) => `Producto con ID ${id} no encontrado`,
 };

@@ -21,33 +21,33 @@ Este es un microservicio de pagos desarrollado con **Node.js, Express y TypeScri
 
 1. Crea un archivo `.env` en la raíz del proyecto con el siguiente contenido:
    ```env
-   # Retry configuration
-   RETRY_COUNT=3                    # Number of retry attempts for failed operations
-   RETRY_DELAY=1000                # Delay between retries in milliseconds
+   # Configuración de reintentos
+   RETRY_COUNT=3                    # Número de intentos para operaciones fallidas
+   RETRY_DELAY=1000                # Tiempo de espera entre reintentos (ms)
 
-   # Stock configuration
-   OUTPUT_STOCK=2                   # Default output stock quantity
+   # Configuración de inventario
+   OUTPUT_STOCK=2                   # Cantidad predeterminada de stock de salida
 
-   # Redis configuration
-   REDIS_HOST='redis'              # Redis server hostname
-   REDIS_PORT=6379                 # Redis server port
-   REDIS_URL='redis://redis:6379'  # Complete Redis connection URL
-   REDIS_RETRY_DELAY=2000          # Redis reconnection delay in milliseconds
+   # Configuración de Redis
+   REDIS_HOST='redis'              # Nombre del host del servidor Redis
+   REDIS_PORT=6379                 # Puerto del servidor Redis
+   REDIS_URL='redis://redis:6379'  # URL completa de conexión a Redis
+   REDIS_RETRY_DELAY=2000          # Tiempo de espera para reconexión a Redis (ms)
 
-   # Server configuration
-   PORT=4003                       # Application server port
-   CACHE_EXPIRY=3600              # Cache expiration time in seconds
+   # Configuración del servidor
+   PORT=4003                       # Puerto del servidor de la aplicación
+   CACHE_EXPIRY=3600              # Tiempo de expiración del caché (segundos)
 
-   # Database configuration
-   DATABASE_URL='postgres://postgres:1234@postgres:5432/ms-payment'  # PostgreSQL connection URL
-   DATABASE_POOL_MAX_CONNECTIONS=5     # Maximum number of connections in the pool
-   DATABASE_POOL_MIN_CONNECTIONS=1     # Minimum number of connections in the pool
-   DATABASE_POOL_IDLE_TIME=600000     # Maximum time (ms) that a connection can be idle
-   DATABASE_POOL_ACQUIRE_TIMEOUT=30000 # Maximum time (ms) to acquire a connection
+   # Configuración de base de datos
+   DATABASE_URL='postgres://postgres:1234@postgres:5432/ms-payment'  # URL de conexión PostgreSQL
+   DATABASE_POOL_MAX_CONNECTIONS=5     # Máximo de conexiones en el pool
+   DATABASE_POOL_MIN_CONNECTIONS=1     # Mínimo de conexiones en el pool
+   DATABASE_POOL_IDLE_TIME=600000     # Tiempo máximo de inactividad de conexión (ms)
+   DATABASE_POOL_ACQUIRE_TIMEOUT=30000 # Tiempo máximo para obtener conexión (ms)
 
-   # External services configuration
-   PRODUCT_SERVICE_URL='http://ms-catalog_app:4001/api/product'  # Product service endpoint
-   PRODUCT_SERVICE_TIMEOUT=5000    # Timeout for product service requests in milliseconds
+   # Configuración de servicios externos
+   PRODUCT_SERVICE_URL='http://ms-catalog_app:4001/api/product'  # URL del servicio de productos
+   PRODUCT_SERVICE_TIMEOUT=5000    # Tiempo límite para peticiones al servicio (ms)
    ```
 
 ## Uso sin Docker

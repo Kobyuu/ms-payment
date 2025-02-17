@@ -1,30 +1,23 @@
 import { Request, Response } from 'express';
 import PaymentService from '../services/paymentService';
 import { ErrorResponse, SuccessResponse } from '../types/types';
-import Payments from '../models/Payment.model';
-import { ERROR_MESSAGES, SUCCESS_MESSAGES, PAYMENT_METHODS } from '../config/constants';
+import { ERROR_MESSAGES, SUCCESS_MESSAGES, DYNAMIC_MESSAGES, PAYMENT_METHODS } from '../config/constants';
 import { HTTP_STATUS } from '../config/constants/httpStatus';
 
 class PaymentController {
   // Obtiene lista paginada de pagos
   static async getPayments(req: Request, res: Response): Promise<Response> {
-    // Configura parámetros de paginación
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
-    const offset = (page - 1) * limit;
-
     try {
-      // Consulta pagos con orden descendente
-      const payments = await Payments.findAll({
-        limit,
-        offset,
-        order: [['id', 'DESC']]
+      // Usa el servicio para obtener los pagos
+      const payments = await PaymentService.getPayments();
+      return res.status(HTTP_STATUS.OK).json({ 
+        data: payments,
+        message: SUCCESS_MESSAGES.PAYMENT.GET_PAYMENTS_SUCCESS 
       });
-      return res.status(HTTP_STATUS.OK).json({ data: payments });
     } catch (error) {
-      console.error(error);
+      console.error(ERROR_MESSAGES.PAYMENT.GET_PAYMENTS_ERROR, error);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-        message: ERROR_MESSAGES.PAYMENT.GET_PAYMENTS_ERROR
+        message: ERROR_MESSAGES.PAYMENT.PROCESS_ERROR
       });
     }
   }
@@ -49,7 +42,8 @@ class PaymentController {
   static async processPayment(req: Request, res: Response): Promise<Response> {
     const { product_id, quantity, payment_method } = req.body;
 
-    console.log('Procesando pago:', { product_id, quantity, payment_method });
+    // Reemplazar console.log hardcodeado
+    console.log(DYNAMIC_MESSAGES.PROCESSING_PAYMENT({ product_id, quantity, payment_method }));
 
     // Validación de datos de entrada
     if (!product_id) {
@@ -81,7 +75,8 @@ class PaymentController {
       );
       return res.status(HTTP_STATUS.CREATED).json(newPayment);
     } catch (error: any) {
-      console.error('Payment processing error:', error);
+      // Reemplazar mensaje de error hardcodeado
+      console.error(ERROR_MESSAGES.PAYMENT.PROCESS_ERROR, error);
       
       // Manejo de errores específicos
       if (error.message === ERROR_MESSAGES.VALIDATION.INVALID_QUANTITY) {
@@ -117,7 +112,8 @@ class PaymentController {
         message: SUCCESS_MESSAGES.PAYMENT.REVERT_SUCCESS 
       } as SuccessResponse);
     } catch (error: any) {
-      console.error(ERROR_MESSAGES.PAYMENT.REVERT_ERROR, (error as any).message);
+      // Reemplazar console.error hardcodeado
+      console.error(ERROR_MESSAGES.PAYMENT.REVERT_ERROR, error);
       
       // Verifica si el pago no existe
       if (error.message === ERROR_MESSAGES.PAYMENT.NOT_FOUND) {

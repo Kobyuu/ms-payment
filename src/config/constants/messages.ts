@@ -40,6 +40,7 @@ export const ERROR_MESSAGES = {
 export const SUCCESS_MESSAGES = {
   PAYMENT: {
     REVERT_SUCCESS: 'Pago revertido exitosamente. La compensación de inventario debe ser gestionada por el orquestador.',
+    GET_PAYMENTS_SUCCESS: 'Pagos obtenidos exitosamente',
   },
   GENERAL: {
     DB_CONNECTION_SUCCESS: 'Conexión a la base de datos establecida exitosamente.',
@@ -53,4 +54,6 @@ export const SUCCESS_MESSAGES = {
 export const DYNAMIC_MESSAGES = {
   RETRY_ATTEMPT: (retryCount: number) => `Intento de reintento: ${retryCount}`,
   SERVER_START: (port: number) => `REST API en el puerto ${port}`,
+  PROCESSING_PAYMENT: (data: { product_id: number, quantity: number, payment_method: string }) => 
+    `Procesando pago: ${JSON.stringify(data)}`,
 };

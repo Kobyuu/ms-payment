@@ -51,7 +51,8 @@ describe('PaymentController', () => {
 
     // Caso error: fallo al obtener pagos
     it('debería manejar errores al obtener pagos', async () => {
-      (PaymentService.getPayments as jest.Mock).mockRejectedValue(new Error('Error al obtener pagos'));
+      (PaymentService.getPayments as jest.Mock)
+        .mockRejectedValue(new Error(ERROR_MESSAGES.PAYMENT.GET_PAYMENTS_ERROR));
 
       const response = await request(server).get('/api/payment');
 

@@ -10,7 +10,7 @@ server.use(express.json());
 // Usar express.urlencoded() para analizar cuerpos URL-encoded
 server.use(express.urlencoded({ extended: true }));
 
-// Middleware de limitación de tasa
+// Middleware de reate limiter
 server.use(limiter);
 
 // Rutas del API de pagos

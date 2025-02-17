@@ -6,6 +6,7 @@ import { calculateTotalPrice } from '../utils/utils';
 import ProductService from './productService';
 
 class PaymentService {
+  // Obtiene todos los pagos registrados
   static async getPayments(): Promise<Payment[]> {
     try {
       return Payments.findAll();
@@ -15,6 +16,7 @@ class PaymentService {
     }
   }
 
+  // Busca un pago específico por su ID
   static async getPaymentById(id: number): Promise<Payment | null> {
     try {
       return Payments.findByPk(id);
@@ -24,18 +26,20 @@ class PaymentService {
     }
   }
 
+  // Procesa un nuevo pago con transacción
   static async processPayment(product_id: number, quantity: number, payment_method: string): Promise<Payment> {
     const transaction = await sequelize.transaction();
     try {
-      // Validate quantity first
+      // Valida cantidad del producto
       if (!quantity || isNaN(quantity) || quantity <= 0) {
         await transaction.rollback();
         throw new Error(ERROR_MESSAGES.VALIDATION.INVALID_QUANTITY);
       }
 
+      // Obtiene información del producto
       const productResponse = await ProductService.getProductById(product_id);
       
-      // Check if we got a successful response
+      // Verifica respuesta del servicio de productos
       if (productResponse.statusCode !== HTTP_STATUS.OK || !productResponse.data) {
         await transaction.rollback();
         throw new Error(ERROR_MESSAGES.PAYMENT.PRODUCT_NOT_FOUND);
@@ -43,14 +47,16 @@ class PaymentService {
 
       const price = productResponse.data.price;
       
-      // Validate price
+      // Valida precio del producto
       if (typeof price !== 'number' || isNaN(price) || price <= 0) {
         await transaction.rollback();
         throw new Error(ERROR_MESSAGES.PAYMENT.INVALID_PRICE);
       }
 
+      // Calcula precio total
       const total = calculateTotalPrice(price, quantity);
       
+      // Crea registro de pago
       const newPayment = await Payments.create({
         product_id,
         price: total,
@@ -61,8 +67,7 @@ class PaymentService {
       return newPayment;
     } catch (error) {
       await transaction.rollback();
-      console.error('Payment processing error:', error);
-      // Propagar el error original en lugar de crear uno nuevo
+      console.error(ERROR_MESSAGES.PAYMENT.PROCESS_ERROR, error);
       if (error instanceof Error) {
         throw error;
       }
@@ -70,22 +75,24 @@ class PaymentService {
     }
   }
 
+  // Compensa/revierte un pago existente
   static async compensatePayment(paymentId: number): Promise<string> {
     const transaction = await sequelize.transaction();
     try {
+      // Busca el pago a compensar
       const payment = await Payments.findByPk(paymentId);
       if (!payment) {
         await transaction.rollback();
         throw new Error(ERROR_MESSAGES.PAYMENT.NOT_FOUND);
       }
 
+      // Elimina el registro del pago
       await payment.destroy({ transaction });
       await transaction.commit();
       return SUCCESS_MESSAGES.PAYMENT.REVERT_SUCCESS;
     } catch (error) {
       await transaction.rollback();
       console.error(ERROR_MESSAGES.PAYMENT.REVERT_ERROR, error);
-      // Propagar el error original
       if (error instanceof Error) {
         throw error;
       }

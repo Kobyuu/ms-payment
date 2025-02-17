@@ -1,4 +1,4 @@
-// Payment interface
+// Interfaz para pagos - Define estructura de un pago
 export interface Payment {
   id?: number;
   product_id: number;
@@ -6,33 +6,33 @@ export interface Payment {
   payment_method: string;
 }
 
-// ErrorResponse interface
+// Interfaz para respuestas de error
 export interface ErrorResponse {
   message: string;
   error?: any;
 }
 
-// SuccessResponse interface
+// Interfaz para respuestas exitosas
 export interface SuccessResponse {
   message: string;
   data?: any;
 }
 
-// CacheService interface
+// Interfaz para servicios de caché
 export interface CacheService {
   getFromCache(key: string): Promise<any>;
   setToCache(key: string, data: any): Promise<void>;
   clearCache(keys: string[]): Promise<void>;
 }
 
-// DatabaseService interface
+// Interfaz para servicios de base de datos
 export interface DatabaseService {
-  transaction<T>(): Promise<T>;
+  transaction<T>(): Promise<T>; 
 }
 
-// Product interfaces
+// Interfaz para productos
 export interface IProduct {
-  productId: number; 
+  productId: number;
   name: string;
   price: number;
   activate: boolean;
@@ -40,6 +40,7 @@ export interface IProduct {
   updatedAt?: Date;
 }
 
+// Interfaz para respuestas de productos
 export interface IProductResponse {
   data: IProduct;
   message?: string;
@@ -47,7 +48,7 @@ export interface IProductResponse {
   statusCode: number;
 }
 
-// RedisConfig interface
+// Interfaz para configuración de Redis
 export interface RedisConfig {
   host: string;
   port: number;

@@ -5,7 +5,7 @@ import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../config/constants';
 import { calculateTotalPrice } from '../utils/utils';
 import redisClient from '../config/redisClient';
 
-// Mock Sequelize
+// Mock de Sequelize para pruebas
 jest.mock('../config/db', () => {
   const mockTransaction = {
     commit: jest.fn().mockResolvedValue(undefined),
@@ -22,21 +22,25 @@ jest.mock('../config/db', () => {
   };
 });
 
-// Mocks
+// Mocks de dependencias
 jest.mock('../models/Payment.model');
 jest.mock('../utils/utils');
 jest.mock('../services/productService');
 
 describe('PaymentService', () => {
+  // Limpia los mocks antes de cada prueba
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
+  // Cierra conexión Redis al finalizar
   afterAll(async () => {
     await redisClient.quit();
   });
 
+  // Pruebas para obtener todos los pagos
   describe('getPayments', () => {
+    // Caso exitoso: lista de pagos
     it('should return all payments', async () => {
       const mockPayments = [{ id: 1, product_id: 1, price: 100, payment_method: 'tarjeta' }];
       (Payments.findAll as jest.Mock).mockResolvedValue(mockPayments);
@@ -45,13 +49,16 @@ describe('PaymentService', () => {
       expect(result).toEqual(mockPayments);
     });
 
+    // Caso error: fallo al obtener pagos
     it('should throw an error if fetching payments fails', async () => {
       (Payments.findAll as jest.Mock).mockRejectedValue(new Error(ERROR_MESSAGES.PAYMENT.GET_PAYMENTS_ERROR));
       await expect(PaymentService.getPayments()).rejects.toThrow(ERROR_MESSAGES.PAYMENT.GET_PAYMENTS_ERROR);
     });
   });
 
+  // Pruebas para obtener pago por ID
   describe('getPaymentById', () => {
+    // Caso exitoso: obtener pago específico
     it('should return payment by ID', async () => {
       const mockPayment = { id: 1, product_id: 1, price: 100, payment_method: 'tarjeta' };
       (Payments.findByPk as jest.Mock).mockResolvedValue(mockPayment);
@@ -60,19 +67,23 @@ describe('PaymentService', () => {
       expect(result).toEqual(mockPayment);
     });
 
+    // Caso: pago no encontrado
     it('should return null if payment not found', async () => {
       (Payments.findByPk as jest.Mock).mockResolvedValue(null);
       const result = await PaymentService.getPaymentById(999);
       expect(result).toBeNull();
     });
 
+    // Caso error: fallo en la búsqueda
     it('should throw an error if fetching payment fails', async () => {
       (Payments.findByPk as jest.Mock).mockRejectedValue(new Error(ERROR_MESSAGES.PAYMENT.GET_PAYMENTS_ERROR));
       await expect(PaymentService.getPaymentById(1)).rejects.toThrow(ERROR_MESSAGES.PAYMENT.GET_PAYMENTS_ERROR);
     });
   });
 
+  // Pruebas para procesar pagos
   describe('processPayment', () => {
+    // Caso exitoso: procesar pago
     it('should process payment successfully', async () => {
       const mockProduct = { data: { id: 1, price: 50 }, statusCode: 200 };
       const mockPayment = { id: 1, product_id: 1, price: 100, payment_method: 'tarjeta' };
@@ -85,11 +96,13 @@ describe('PaymentService', () => {
       expect(result).toEqual(mockPayment);
     });
 
+    // Caso error: cantidad inválida
     it('should throw error if invalid quantity', async () => {
       await expect(PaymentService.processPayment(1, 0, 'tarjeta'))
         .rejects.toThrow(ERROR_MESSAGES.VALIDATION.INVALID_QUANTITY);
     });
 
+    // Caso error: producto no encontrado
     it('should throw error if product not found', async () => {
       (ProductService.getProductById as jest.Mock).mockResolvedValue({ 
         statusCode: 404, 
@@ -111,7 +124,9 @@ describe('PaymentService', () => {
     });
   });
 
+  // Pruebas para compensación de pagos
   describe('compensatePayment', () => {
+    // Caso exitoso: compensar pago
     it('should compensate payment successfully', async () => {
       const mockPayment = { 
         id: 1, 
@@ -131,6 +146,7 @@ describe('PaymentService', () => {
       }));
     });
 
+    // Caso error: pago no encontrado
     it('should throw error if payment not found', async () => {
       (Payments.findByPk as jest.Mock).mockResolvedValue(null);
       

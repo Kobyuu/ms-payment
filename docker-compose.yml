@@ -1,6 +1,21 @@
 version: '3.8'
 
 services:
+  # Traefik - Proxy inverso y balanceador de carga
+  traefik:
+    image: traefik:v2.9
+    container_name: ms-payment_traefik
+    command:
+      - "--api.insecure=true"  # Activa el panel de control de Traefik (opcional)
+      - "--providers.docker=true"  # Habilita el proveedor de Docker
+      - "--entrypoints.web.address=:80"  # Expone el puerto 80 para HTTP
+    ports:
+      - "110:80"   # Puerto para HTTP
+      - "11080:8080"  # Puerto para el panel de Traefik (opcional)
+    networks:
+      - microservicios-red
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"  # Permite que Traefik lea la configuración de Docker
 
   postgres:
     image: postgres:15
@@ -84,6 +99,10 @@ services:
       timeout: 5s
       retries: 10
       start_period: 15s
+    labels:
+      - "traefik.enable=true"  # Habilita Traefik para este contenedor
+      - "traefik.http.routers.app.rule=Host(localhost)"  # Define la regla para enrutar el tráfico al contenedor
+      - "traefik.http.services.app.loadbalancer.server.port=4003"  # Puerto de la aplicación dentro del contenedor
 
   # K6
   k6:
@@ -102,6 +121,7 @@ services:
       - microservicios-red
 volumes:
   postgres_data_payment:
+  
 networks:
   microservicios-red:
     external: true

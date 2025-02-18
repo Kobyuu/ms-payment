@@ -25,6 +25,7 @@ export const ERROR_MESSAGES = {
     ENV_VAR_NOT_DEFINED: 'Variable de entorno no definida',
     SERVICE_UNAVAILABLE: 'Servicio no disponible temporalmente',
     RESOURCE_NOT_FOUND: 'El recurso solicitado no existe',
+    DB_RECONNECTION_ERROR: 'Error al intentar reconectar:',
     HTTP_REQUEST: 'Error en la solicitud HTTP',
     RATE_LIMIT_EXCEEDED: 'Demasiadas solicitudes desde esta IP, por favor intente de nuevo más tarde.'
   },
@@ -44,6 +45,7 @@ export const SUCCESS_MESSAGES = {
   },
   GENERAL: {
     DB_CONNECTION_SUCCESS: 'Conexión a la base de datos establecida exitosamente.',
+    DB_RECONNECTION_SUCCESS: 'Reconectado a la base de datos con éxito',
     OK: 'OK',
   },
   REDIS: {

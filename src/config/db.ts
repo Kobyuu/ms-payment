@@ -1,8 +1,7 @@
 import { Sequelize } from 'sequelize-typescript';
 import dotenv from 'dotenv';
 import colors from 'colors';
-import { ERROR_MESSAGES, SUCCESS_MESSAGES } from './constants';
-import { CONFIG } from './constants';
+import { ERROR_MESSAGES, SUCCESS_MESSAGES, CONFIG } from './constants';
 import { DatabaseService } from '../types/types';
 
 // Carga variables de entorno
@@ -17,9 +16,9 @@ if (!process.env.DATABASE_URL) {
 
 // Configuración de Sequelize con opciones de pool
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
-    dialect: 'postgres',
-    models: [__dirname + '/../models/**/*.ts'],
-    logging: false,
+    dialect: CONFIG.DIALECT,
+    models: [__dirname + CONFIG.MODELS_PATH],
+    logging: CONFIG.LOGGING,
     pool: {
         max: CONFIG.DATABASE_POOL_MAX_CONNECTIONS,     // Máximo de conexiones simultáneas
         min: CONFIG.DATABASE_POOL_MIN_CONNECTIONS,     // Mínimo de conexiones mantenidas
@@ -30,12 +29,12 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
 
 // Manejo automático de reconexión tras pérdida de conexión
 sequelize.addHook('afterDisconnect', async () => {
-    console.log('Conexión a la base de datos perdida. Intentando reconectar...');
+    console.log(ERROR_MESSAGES.GENERAL.DB_RECONNECTION_ERROR);
     try {
         await sequelize.authenticate();
-        console.log('Reconectado a la base de datos con éxito.');
+        console.log(SUCCESS_MESSAGES.GENERAL.DB_RECONNECTION_SUCCESS);
     } catch (err) {
-        console.error('Error al intentar reconectar:', err);
+        console.error(ERROR_MESSAGES.GENERAL.DB_RECONNECTION_ERROR, err);
     }
 });
 

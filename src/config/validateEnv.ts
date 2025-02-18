@@ -11,6 +11,9 @@ export function validateEnv(): void {
     'DATABASE_POOL_MIN_CONNECTIONS',
     'DATABASE_POOL_IDLE_TIME',
     'DATABASE_POOL_ACQUIRE_TIMEOUT',
+    'DIALECT',
+    'MODELS_PATH',
+    'LOGGING',
 
     // Configuración de servicios externos
     'PRODUCT_SERVICE_URL',

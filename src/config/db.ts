@@ -1,9 +1,8 @@
 import { Sequelize } from 'sequelize-typescript';
 import dotenv from 'dotenv';
 import colors from 'colors';
-import { ERROR_MESSAGES, SUCCESS_MESSAGES, CONFIG ,} from './constants';
+import { ERROR_MESSAGES, SUCCESS_MESSAGES, CONFIG } from './constants';
 import { DatabaseService } from '../types/types';
-import DEFAULTS
 
 // Carga variables de entorno
 dotenv.config();
@@ -16,17 +15,20 @@ if (!process.env.DATABASE_URL) {
 }
 
 // Configuración de Sequelize con opciones de pool
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
-    dialect: CONFIG.DIALECT,
-    models: [__dirname + CONFIG.MODELS_PATH],
-    logging: CONFIG.LOGGING,
-    pool: {
-        max: CONFIG.DATABASE_POOL_MAX_CONNECTIONS,     // Máximo de conexiones simultáneas
-        min: CONFIG.DATABASE_POOL_MIN_CONNECTIONS,     // Mínimo de conexiones mantenidas
-        idle: CONFIG.DATABASE_POOL_IDLE_TIME,         // Tiempo máximo de inactividad
-        acquire: CONFIG.DATABASE_POOL_ACQUIRE_TIMEOUT // Tiempo máximo para obtener conexión
+const sequelize = new Sequelize(
+    process.env.DATABASE_URL,
+    {
+        dialect: CONFIG.DIALECT as 'postgres' | 'mysql' | 'sqlite' | 'mariadb' | 'mssql',
+        models: [__dirname + CONFIG.MODELS_PATH],
+        logging: CONFIG.LOGGING,
+        pool: {
+            max: CONFIG.DATABASE_POOL_MAX_CONNECTIONS,     // Máximo de conexiones simultáneas
+            min: CONFIG.DATABASE_POOL_MIN_CONNECTIONS,     // Mínimo de conexiones mantenidas
+            idle: CONFIG.DATABASE_POOL_IDLE_TIME,         // Tiempo máximo de inactividad
+            acquire: CONFIG.DATABASE_POOL_ACQUIRE_TIMEOUT // Tiempo máximo para obtener conexión
+        }
     }
-});
+);
 
 // Manejo automático de reconexión tras pérdida de conexión
 sequelize.addHook('afterDisconnect', async () => {

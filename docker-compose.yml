@@ -26,7 +26,7 @@ services:
         postgres:
           condition: service_healthy
       command: >
-        psql -U postgres -h postgres -c "CREATE DATABASE \"ms-payment\";"
+        psql -U postgres -h postgres -d postgres -c "CREATE DATABASE \"ms-payment\";"
       environment:
         PGPASSWORD: 1234
       networks:

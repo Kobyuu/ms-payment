@@ -18,14 +18,17 @@ if (!process.env.DATABASE_URL) {
 const sequelize = new Sequelize(
     process.env.DATABASE_URL,
     {
-        dialect: CONFIG.DIALECT as 'postgres' | 'mysql' | 'sqlite' | 'mariadb' | 'mssql',
-        models: [__dirname + CONFIG.MODELS_PATH],
+        dialect: CONFIG.DIALECT as 'postgres',
+        models: [__dirname + '/../models/**/*.ts'], // Update models path
         logging: CONFIG.LOGGING,
         pool: {
             max: CONFIG.DATABASE_POOL_MAX_CONNECTIONS,     // Máximo de conexiones simultáneas
             min: CONFIG.DATABASE_POOL_MIN_CONNECTIONS,     // Mínimo de conexiones mantenidas
             idle: CONFIG.DATABASE_POOL_IDLE_TIME,         // Tiempo máximo de inactividad
             acquire: CONFIG.DATABASE_POOL_ACQUIRE_TIMEOUT // Tiempo máximo para obtener conexión
+        },
+        define: {
+            timestamps: true // Enable timestamps globally
         }
     }
 );

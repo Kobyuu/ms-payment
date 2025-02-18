@@ -48,6 +48,10 @@ Este es un microservicio de pagos desarrollado con **Node.js, Express y TypeScri
    # Configuración de servicios externos
    PRODUCT_SERVICE_URL='http://ms-catalog_app:4001/api/product'  # URL del servicio de productos
    PRODUCT_SERVICE_TIMEOUT=5000    # Tiempo límite para peticiones al servicio (ms)
+
+   DIALECT= 'postgres'
+   MODELS_PATH= '/../models/**/*.ts'
+   LOGGING= false
    ```
 
 ## Uso sin Docker

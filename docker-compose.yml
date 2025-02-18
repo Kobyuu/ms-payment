@@ -67,6 +67,9 @@ services:
       RETRY_DELAY: 1000
       OUTPUT_STOCK: 2
       CACHE_EXPIRY: 3600
+      DIALECT: 'postgres'
+      MODELS_PATH: '/../models/**/*.ts'
+      LOGGING: false
     volumes:
       - .:/app
     ports:
